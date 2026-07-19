@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CarryGo - 聊天</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            background: var(--gray-50);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        
+        .chat-header-bar {
+            background: white;
+            padding: 0.75rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+            border-bottom: 1px solid var(--gray-100);
+        }
+        
+        .back-btn {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--gray-600);
+        }
+        
+        .chat-user-info {
+            flex: 1;
+        }
+        
+        .chat-user-name {
+            font-weight: 600;
+            font-size: 0.9375rem;
+        }
+        
+        .chat-post-context {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            margin-top: 0.125rem;
+        }
+        
+        .messages-container {
+            padding: 1rem 1.25rem;
+            flex: 1;
+            overflow-y: auto;
+            background: var(--gray-50);
+        }
+        
+        .message-group {
+            margin-bottom: 1rem;
+        }
+        
+        .message-row {
+            display: flex;
+            margin-bottom: 0.5rem;
+        }
+        
+        .message-row.sent {
+            justify-content: flex-end;
+        }
+        
+        .chat-message {
+            max-width: 75%;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-lg);
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+        
+        .chat-message.sent {
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 0.25rem;
+        }
+        
+        .chat-message.received {
+            background: white;
+            color: var(--gray-900);
+            border-bottom-left-radius: 0.25rem;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .message-time {
+            font-size: 0.6875rem;
+            color: var(--gray-400);
+            text-align: center;
+            margin: 0.75rem 0;
+        }
+        
+        .input-area {
+            background: white;
+            padding: 0.75rem 1.25rem;
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            border-top: 1px solid var(--gray-100);
+        }
+        
+        .chat-input {
+            flex: 1;
+            background: var(--gray-100);
+            border: none;
+            border-radius: 9999px;
+            padding: 0.625rem 1rem;
+            font-size: 0.875rem;
+            outline: none;
+        }
+        
+        .send-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="status-bar">
+            <span>9:41</span>
+            <span>📶 🔋</span>
+        </div>
+        <div class="phone-notch"></div>
+        
+        <div style="display: flex; flex-direction: column; height: 100%; padding-top: 50px; padding-bottom: 80px;">
+            <div class="chat-header-bar">
+                <div class="back-btn" onclick="window.location.href='chat.html'">
+                    <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </div>
+                <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop" alt="User" class="avatar" style="width: 40px; height: 40px;">
+                <div class="chat-user-info">
+                    <div class="chat-user-name">Alice</div>
+                    <div class="chat-post-context">🧳 慕尼黑 → 成都 · MacBook</div>
+                </div>
+            </div>
+            
+            <div class="messages-container" style="flex: 1; overflow-y: auto;">
+                <!-- Application Info Card -->
+                <div style="margin: 1rem; padding: 1rem; background: var(--primary-light); border-radius: var(--radius-xl); border: 2px solid var(--primary);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                        <div style="font-weight: 600; color: var(--primary);">📦 帮带申请</div>
+                        <div style="padding: 0.25rem 0.625rem; background: #fef3c7; color: #92400e; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">待确认</div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; font-size: 0.875rem;">
+                        <span style="padding: 0.375rem 0.75rem; background: white; border-radius: 9999px; font-weight: 500;">MacBook Pro</span>
+                        <span style="padding: 0.375rem 0.75rem; background: white; border-radius: 9999px; font-weight: 500;">2 kg</span>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+                        <button class="btn btn-secondary" style="flex: 1;" onclick="rejectApplication()">拒绝</button>
+                        <button class="btn btn-primary" style="flex: 1;" onclick="confirmApplication()">确认帮带</button>
+                    </div>
+                </div>
+                
+                <div class="message-time">今天 14:30</div>
+                
+                <div class="message-group">
+                    <div class="message-row">
+                        <div class="chat-message received">
+                            你好！我看到你的帮带信息了
+                        </div>
+                    </div>
+                    <div class="message-row">
+                        <div class="chat-message received">
+                            我有一台MacBook想请你帮忙带回去，大概2kg
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="message-group">
+                    <div class="message-row sent">
+                        <div class="chat-message sent">
+                            你好呀！没问题的，2kg在我的剩余容量里
+                        </div>
+                    </div>
+                    <div class="message-row sent">
+                        <div class="chat-message sent">
+                            你打算怎么交付呢？面交还是邮寄？
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="message-group">
+                    <div class="message-row">
+                        <div class="chat-message received">
+                            面交可以吗？我家离机场不远
+                        </div>
+                    </div>
+                    <div class="message-row">
+                        <div class="chat-message received">
+                            或者我们在机场航站楼见面也可以
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="message-group">
+                    <div class="message-row sent">
+                        <div class="chat-message sent">
+                            好的，机场面交更方便！
+                        </div>
+                    </div>
+                    <div class="message-row sent">
+                        <div class="chat-message sent">
+                            我8月18号下午到，到时候联系
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="message-group">
+                    <div class="message-row">
+                        <div class="chat-message received">
+                            好的，那我们明天机场见！
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="input-area">
+                <input type="text" class="chat-input" placeholder="输入消息...">
+                <button class="send-btn">
+                    <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        function confirmApplication() {
+            showToast('帮带已确认！', 'success');
+            // 跳转到行李箱页面，显示更新后的内容
+            setTimeout(() => {
+                window.location.href = 'digital-luggage.html';
+            }, 1500);
+        }
+        
+        function rejectApplication() {
+            if (confirm('确定要拒绝这个帮带申请吗？')) {
+                showToast('已拒绝申请', 'info');
+                setTimeout(() => {
+                    window.location.href = 'chat.html';
+                }, 1000);
+            }
+        }
+    </script>
+</body>
+</html>

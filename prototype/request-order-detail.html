@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CarryGo - 我的需求单</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+      body {
+        background: var(--gray-50);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 1rem;
+      }
+
+      .status-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.375rem 0.75rem;
+        border-radius: 9999px;
+        background: var(--primary-light);
+        color: var(--primary);
+        font-size: 0.8125rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+      }
+
+      .section-block {
+        background: white;
+        margin: 0 1.25rem 1rem;
+        border-radius: var(--radius-xl);
+        padding: 1rem;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .section-title {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        margin-bottom: 0.875rem;
+        color: var(--gray-800);
+      }
+
+      .detail-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.5rem 0;
+        font-size: 0.875rem;
+      }
+
+      .detail-label {
+        color: var(--gray-500);
+      }
+
+      .detail-value {
+        color: var(--gray-900);
+        font-weight: 500;
+        text-align: right;
+      }
+
+      .carrier-card {
+        display: flex;
+        gap: 0.875rem;
+        align-items: center;
+      }
+
+      .carrier-avatar {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .carrier-name {
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+      }
+
+      .carrier-meta {
+        font-size: 0.8125rem;
+        color: var(--gray-500);
+        line-height: 1.5;
+      }
+
+      .hint-box {
+        margin-top: 1rem;
+        padding: 0.875rem 1rem;
+        background: var(--gray-50);
+        border-radius: var(--radius-lg);
+        font-size: 0.8125rem;
+        color: var(--gray-600);
+        line-height: 1.6;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="phone-frame">
+      <div class="status-bar">
+        <span>9:41</span>
+        <span>📶 🔋</span>
+      </div>
+      <div class="phone-notch"></div>
+
+      <div class="phone-content" style="padding-bottom: 96px">
+        <div class="header">
+          <div class="back-btn" onclick="window.location.href = 'profile.html'">
+            <svg
+              style="width: 20px; height: 20px"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </div>
+          <span style="font-weight: 600">我的需求单</span>
+          <div style="width: 40px"></div>
+        </div>
+
+        <div style="padding: 1.25rem 1.25rem 0">
+          <div class="status-chip">🧳 Linda 已接单</div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-title">需求单信息</div>
+          <div class="detail-row">
+            <span class="detail-label">路线</span>
+            <span class="detail-value">柏林 → 上海</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">物品</span>
+            <span class="detail-value">爱他美奶粉（3罐）</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">重量</span>
+            <span class="detail-value">3kg</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">当前状态</span>
+            <span class="detail-value" style="color: var(--primary)"
+              >已确认</span
+            >
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-title">承接人</div>
+          <div class="carrier-card">
+            <img
+              src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop"
+              alt="Linda"
+              class="carrier-avatar"
+            />
+            <div style="flex: 1">
+              <div class="carrier-name">Linda</div>
+              <div class="carrier-meta">
+                23 次帮带<br />
+                当前行李箱：慕尼黑 → 成都 2024
+              </div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 0.75rem; margin-top: 1rem">
+            <button
+              class="btn btn-primary"
+              style="flex: 1"
+              onclick="
+                window.location.href = 'chat-detail-proposal-review.html'
+              "
+            >
+              联系TA
+            </button>
+            <button
+              class="btn btn-secondary"
+              style="flex: 1"
+              onclick="
+                window.location.href = 'chat-detail-proposal-review.html'
+              "
+            >
+              查看聊天
+            </button>
+          </div>
+          <div class="hint-box">
+            这单已经由 Linda
+            确认承接。她标记完成后，你这边再点一次“我已完成收货”，就会进入评价。
+          </div>
+          <button
+            class="btn btn-primary btn-full"
+            style="margin-top: 1rem"
+            onclick="
+              window.location.href =
+                'review.html?trade=request_berlin_shanghai_001&from=me&to=linda'
+            "
+          >
+            我已完成收货
+          </button>
+        </div>
+      </div>
+
+      <div class="tab-bar">
+        <a href="home.html" class="tab-item" data-page="home">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+            />
+          </svg>
+          <span>首页</span>
+        </a>
+        <a href="publish.html" class="tab-item" data-page="publish">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+          <span>发布</span>
+        </a>
+        <a
+          href="digital-luggage.html"
+          class="tab-item"
+          data-page="digital-luggage"
+        >
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+            />
+          </svg>
+          <span>行李箱</span>
+        </a>
+        <a href="chat.html" class="tab-item" data-page="chat">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+            />
+          </svg>
+          <span>消息</span>
+        </a>
+        <a href="profile.html" class="tab-item active" data-page="profile">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+            />
+          </svg>
+          <span>我的</span>
+        </a>
+      </div>
+    </div>
+
+    <script src="js/app.js"></script>
+  </body>
+</html>

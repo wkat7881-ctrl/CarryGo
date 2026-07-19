@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CarryGo - 数字行李箱</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            background: var(--gray-50);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        
+        .suitcase-tabs {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: white;
+            border-bottom: 1px solid var(--gray-100);
+        }
+        
+        .suitcase-tab {
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--gray-500);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .suitcase-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .suitcase-view {
+            background: linear-gradient(180deg, var(--primary-light) 0%, var(--gray-50) 100%);
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .suitcase-container {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+        
+        .suitcase-visual {
+            font-size: 8rem;
+            transition: transform 0.5s ease;
+            filter: drop-shadow(0 10px 20px rgba(109, 94, 245, 0.2));
+        }
+        
+        .suitcase-container.open .suitcase-visual {
+            transform: scale(1.05);
+        }
+        
+        .suitcase-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-top: 0.5rem;
+            color: var(--gray-800);
+        }
+        
+        .suitcase-route {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            margin-top: 0.25rem;
+        }
+        
+        .capacity-display {
+            margin: 1.5rem 1.25rem;
+        }
+        
+        .capacity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        
+        .capacity-label {
+            font-weight: 600;
+            font-size: 0.9375rem;
+        }
+        
+        .capacity-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        
+        .capacity-bar-container {
+            height: 20px;
+            background: var(--gray-200);
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        
+        .capacity-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary) 0%, #A78BFA 100%);
+            border-radius: 9999px;
+            width: 60%;
+            transition: width 0.5s ease;
+        }
+        
+        .suitcase-items-container {
+            padding: 0 1.25rem;
+            transition: all 0.5s ease;
+            max-height: 0;
+            overflow: hidden;
+        }
+        
+        .suitcase-items-container.open {
+            max-height: 1000px;
+            padding-bottom: 1rem;
+        }
+        
+        .activity-banner {
+            margin: 0 1.25rem 1rem;
+            padding: 0.875rem 1rem;
+            background: var(--primary-light);
+            border-radius: var(--radius-xl);
+            color: var(--primary);
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        .suitcase-item {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .suitcase-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+        
+        .item-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--primary-light);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .item-details {
+            flex: 1;
+        }
+        
+        .item-name {
+            font-weight: 600;
+            font-size: 0.9375rem;
+        }
+        
+        .item-info {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 0.25rem;
+            font-size: 0.8125rem;
+            color: var(--gray-500);
+        }
+
+        .item-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .delete-btn {
+            padding: 0.5rem 0.875rem;
+            background: #fee2e2;
+            color: #b91c1c;
+            border: none;
+            border-radius: 9999px;
+            font-size: 0.8125rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .delete-btn:hover {
+            background: #fecaca;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.625rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .status-confirmed {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+        
+        .status-pending {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+        
+        .chat-btn {
+            padding: 0.5rem 0.875rem;
+            background: var(--gray-100);
+            border-radius: 9999px;
+            font-size: 0.8125rem;
+            color: var(--gray-700);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .chat-btn:hover {
+            background: var(--gray-200);
+        }
+        
+        .history-card {
+            background: white;
+            margin: 0.75rem 1.25rem;
+            border-radius: var(--radius-xl);
+            padding: 1rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-100);
+        }
+        
+        .history-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .history-title {
+            font-weight: 600;
+            font-size: 0.9375rem;
+        }
+        
+        .history-status {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            background: var(--gray-100);
+            padding: 0.25rem 0.625rem;
+            border-radius: 9999px;
+        }
+        
+        .history-route {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+        
+        .history-stats {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.75rem;
+            font-size: 0.8125rem;
+            color: var(--gray-500);
+        }
+        
+        .empty-history {
+            text-align: center;
+            padding: 3rem 1.25rem;
+            color: var(--gray-400);
+        }
+        
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="status-bar">
+            <span>9:41</span>
+            <span>📶 🔋</span>
+        </div>
+        <div class="phone-notch"></div>
+        
+        <div class="phone-content" style="padding-top: 0;">
+            <div class="header">
+                <div style="width: 40px;"></div>
+                <h1 class="header-title">我的行李箱</h1>
+                <div style="width: 40px;"></div>
+            </div>
+            
+            <div class="suitcase-tabs">
+                <div class="suitcase-tab active" onclick="switchTab('current')">当前</div>
+                <div class="suitcase-tab" onclick="switchTab('history')">历史</div>
+            </div>
+            
+            <div id="current-tab">
+                <div class="suitcase-view">
+                    <div class="suitcase-container" id="suitcase-toggle" onclick="toggleSuitcase()">
+                        <div class="suitcase-visual">🧳</div>
+                    </div>
+                    <div class="suitcase-name">慕尼黑 → 成都 2024</div>
+                    <div class="suitcase-route">8月18日出发</div>
+                </div>
+                
+                <div class="activity-banner" id="latestActivity">
+                    Tom 已确认这单，物品已加入当前行李箱。
+                </div>
+
+                <div class="capacity-display">
+                    <div class="capacity-header">
+                        <span class="capacity-label">容量</span>
+                        <span class="capacity-value" id="capacityValue">4kg / 10kg</span>
+                    </div>
+                    <div class="capacity-bar-container">
+                        <div class="capacity-bar-fill" id="capacityFill" style="width: 60%;"></div>
+                    </div>
+                </div>
+                
+                <div class="suitcase-items-container open" id="suitcase-items">
+                    <div class="suitcase-entry" data-item="爱他美奶粉（3罐）" data-owner="Tom" data-weight="3" data-added="2026-07-16T22:10:00">
+                        <div class="suitcase-item" onclick="window.location.href='item-status.html'" style="border: 2px solid var(--primary-light);">
+                            <div class="item-icon">🍼</div>
+                            <div class="item-details">
+                                <div class="item-name">爱他美奶粉（3罐）</div>
+                                <div class="item-info">
+                                    <span>3kg</span>
+                                    <span>·</span>
+                                    <span>Tom</span>
+                                </div>
+                            </div>
+                            <span class="status-badge status-confirmed">已确认</span>
+                            <div class="item-actions">
+                                <div class="chat-btn" onclick="event.stopPropagation(); window.location.href='chat-detail.html'">💬</div>
+                                <button class="delete-btn" onclick="event.stopPropagation(); deleteSuitcaseItem(this)">删除</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="suitcase-entry" data-item="MacBook Pro" data-owner="Alice" data-weight="2" data-added="2026-07-16T18:20:00">
+                        <div class="suitcase-item" onclick="window.location.href='item-status.html'">
+                            <div class="item-icon">💻</div>
+                            <div class="item-details">
+                                <div class="item-name">MacBook Pro</div>
+                                <div class="item-info">
+                                    <span>2kg</span>
+                                    <span>·</span>
+                                    <span>Alice</span>
+                                </div>
+                            </div>
+                            <span class="status-badge status-confirmed">已确认</span>
+                            <div class="item-actions">
+                                <div class="chat-btn" onclick="event.stopPropagation(); window.location.href='chat-detail.html'">💬</div>
+                                <button class="delete-btn" onclick="event.stopPropagation(); deleteSuitcaseItem(this)">删除</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="suitcase-entry" data-item="护肤品套装" data-owner="Amy" data-weight="1" data-added="2026-07-16T09:05:00">
+                        <div class="suitcase-item" onclick="window.location.href='item-status.html'">
+                            <div class="item-icon">💄</div>
+                            <div class="item-details">
+                                <div class="item-name">护肤品套装</div>
+                                <div class="item-info">
+                                    <span>1kg</span>
+                                    <span>·</span>
+                                    <span>Amy</span>
+                                </div>
+                            </div>
+                            <span class="status-badge status-confirmed">已确认</span>
+                            <div class="item-actions">
+                                <div class="chat-btn" onclick="event.stopPropagation(); window.location.href='chat-detail.html'">💬</div>
+                                <button class="delete-btn" onclick="event.stopPropagation(); deleteSuitcaseItem(this)">删除</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="history-tab" style="display: none;">
+                <div class="history-card">
+                    <div class="history-header">
+                        <span class="history-title">柏林 → 上海</span>
+                        <span class="history-status">已完成</span>
+                    </div>
+                    <div class="history-route">2024年5月20日出发</div>
+                    <div class="history-stats">
+                        <span>🧳 8kg / 10kg</span>
+                        <span>📦 5个包裹</span>
+                    </div>
+                </div>
+                
+                <div class="history-card">
+                    <div class="history-header">
+                        <span class="history-title">巴黎 → 北京</span>
+                        <span class="history-status">已完成</span>
+                    </div>
+                    <div class="history-route">2024年3月15日出发</div>
+                    <div class="history-stats">
+                        <span>🧳 12kg / 15kg</span>
+                        <span>📦 7个包裹</span>
+                    </div>
+                </div>
+                
+                <div class="empty-history">
+                    <div class="empty-icon">📦</div>
+                    <div>更多历史记录</div>
+                    <div style="font-size: 0.875rem; margin-top: 0.5rem;">继续使用 CarryGo 积累更多记录</div>
+                </div>
+            </div>
+            
+            <div style="height: 1rem;"></div>
+        </div>
+        
+        <div class="tab-bar">
+            <a href="home.html" class="tab-item" data-page="home">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+                <span>首页</span>
+            </a>
+            <a href="publish.html" class="tab-item" data-page="publish">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                <span>发布</span>
+            </a>
+            <a href="digital-luggage.html" class="tab-item active" data-page="digital-luggage">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                </svg>
+                <span>行李箱</span>
+            </a>
+            <a href="chat.html" class="tab-item" data-page="chat">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                </svg>
+                <span>消息</span>
+            </a>
+            <a href="profile.html" class="tab-item" data-page="profile">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+                <span>我的</span>
+            </a>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        function switchTab(tab) {
+            const tabs = document.querySelectorAll('.suitcase-tab');
+            tabs.forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (tab === 'current') {
+                document.getElementById('current-tab').style.display = 'block';
+                document.getElementById('history-tab').style.display = 'none';
+            } else {
+                document.getElementById('current-tab').style.display = 'none';
+                document.getElementById('history-tab').style.display = 'block';
+            }
+        }
+        
+        function toggleSuitcase() {
+            const container = document.getElementById('suitcase-toggle');
+            const items = document.getElementById('suitcase-items');
+            container.classList.toggle('open');
+            items.classList.toggle('open');
+        }
+
+        function setLatestActivity(text) {
+            const banner = document.getElementById('latestActivity');
+            if (banner) banner.textContent = text;
+        }
+
+        function getItemAddedTimestamp(element) {
+            const value = element.dataset.added;
+            const parsed = Date.parse(value);
+            return Number.isFinite(parsed) ? parsed : 0;
+        }
+
+        function sortSuitcaseItems() {
+            const container = document.getElementById('suitcase-items');
+            if (!container) return;
+            const items = Array.from(container.querySelectorAll('.suitcase-entry'));
+            items.sort((a, b) => getItemAddedTimestamp(b) - getItemAddedTimestamp(a));
+            items.forEach(item => container.appendChild(item));
+        }
+
+        function formatWeight(value) {
+            const numberValue = Number(value);
+            if (!Number.isFinite(numberValue)) return '0kg';
+            if (Number.isInteger(numberValue)) return `${numberValue}kg`;
+            return `${numberValue.toFixed(1)}kg`;
+        }
+
+        function updateCapacity() {
+            const container = document.getElementById('suitcase-items');
+            const capacityValue = document.getElementById('capacityValue');
+            const capacityFill = document.getElementById('capacityFill');
+            if (!container || !capacityValue || !capacityFill) return;
+
+            const totalCapacity = 10;
+            const weights = Array.from(container.querySelectorAll('.suitcase-entry')).map(item => Number(item.dataset.weight || 0));
+            const used = weights.reduce((sum, w) => sum + (Number.isFinite(w) ? w : 0), 0);
+            const percentage = Math.min(100, Math.max(0, (used / totalCapacity) * 100));
+            capacityValue.textContent = `${formatWeight(used)} / ${totalCapacity}kg`;
+            capacityFill.style.width = `${percentage}%`;
+        }
+
+        function deleteSuitcaseItem(button) {
+            const entry = button.closest('.suitcase-entry');
+            if (!entry) return;
+
+            const itemName = entry.dataset.item || '物品';
+            const owner = entry.dataset.owner || '对方';
+            entry.remove();
+            updateCapacity();
+            setLatestActivity(`你已取消 ${owner} 的这单，${itemName} 已从当前行李箱移除。`);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            sortSuitcaseItems();
+            updateCapacity();
+        });
+    </script>
+</body>
+</html>

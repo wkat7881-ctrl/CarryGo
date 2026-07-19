@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CarryGo - 评价</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            background: var(--gray-50);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        
+        .success-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #8B5CF6 100%);
+            padding: 2.5rem 1.5rem 2rem;
+            text-align: center;
+            color: white;
+        }
+        
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.25);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.25rem;
+            font-size: 2.5rem;
+        }
+        
+        .success-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .success-subtitle {
+            font-size: 0.9375rem;
+            opacity: 0.9;
+        }
+        
+        .review-section {
+            padding: 1.5rem;
+        }
+        
+        .review-header {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            color: var(--gray-800);
+        }
+        
+        .badges-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .badges-label {
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: 0.75rem;
+        }
+        
+        .badges-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .badge-option {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.5rem 1rem;
+            background: white;
+            border: 1.5px solid var(--gray-200);
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .badge-option:hover {
+            border-color: var(--primary);
+        }
+        
+        .badge-option.selected {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+        
+        .partner-info {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .partner-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .partner-details {
+            flex: 1;
+        }
+        
+        .partner-name {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .partner-route {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 0.9375rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(109, 94, 245, 0.3);
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(109, 94, 245, 0.4);
+        }
+        
+        .skip-btn {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            background: transparent;
+            border: none;
+            color: var(--gray-500);
+            font-size: 0.9375rem;
+            cursor: pointer;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="status-bar">
+            <span>9:41</span>
+            <span>📶 🔋</span>
+        </div>
+        <div class="phone-notch"></div>
+        
+        <div class="phone-content" style="padding-top: 0; padding-bottom: 150px;">
+            <div class="header">
+                <div class="back-btn" onclick="window.location.href='digital-luggage.html'">
+                    <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </div>
+                <span style="font-weight: 600;">评价</span>
+                <div style="width: 40px;"></div>
+            </div>
+            
+            <div class="success-header">
+                <div class="success-icon">🎉</div>
+                <h1 class="success-title">任务完成！</h1>
+                <p class="success-subtitle">用标签告诉对方你的体验</p>
+            </div>
+            
+            <div class="review-section">
+                <div class="partner-info">
+                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop" alt="Partner" class="partner-avatar">
+                    <div class="partner-details">
+                        <div class="partner-name" id="partnerName">张明</div>
+                        <div class="partner-route" id="partnerRoute">Munich → Chengdu · 2kg</div>
+                    </div>
+                </div>
+                
+                <div class="badges-section">
+                    <div class="badges-label">请选择适合对方的标签（最多选 3 个，可不选）</div>
+                    <div class="badges-grid">
+                        <div class="badge-option" data-badge="reliable" onclick="toggleBadge(this)">
+                            <span>✔</span>
+                            <span>Reliable</span>
+                        </div>
+                        <div class="badge-option" data-badge="on_time" onclick="toggleBadge(this)">
+                            <span>⏰</span>
+                            <span>On Time</span>
+                        </div>
+                        <div class="badge-option" data-badge="easy_communication" onclick="toggleBadge(this)">
+                            <span>💬</span>
+                            <span>Easy Communication</span>
+                        </div>
+                        <div class="badge-option" data-badge="fast_response" onclick="toggleBadge(this)">
+                            <span>⚡</span>
+                            <span>Fast Response</span>
+                        </div>
+                        <div class="badge-option" data-badge="careful_handling" onclick="toggleBadge(this)">
+                            <span>📦</span>
+                            <span>Careful Handling</span>
+                        </div>
+                        <div class="badge-option" data-badge="friendly" onclick="toggleBadge(this)">
+                            <span>😊</span>
+                            <span>Friendly</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="submit-btn" onclick="submitReview()">提交评价</button>
+                <button class="skip-btn" onclick="window.location.href='home.html'">稍后再说</button>
+            </div>
+        </div>
+        
+        <div class="tab-bar">
+            <a href="home.html" class="tab-item" data-page="home">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+                <span>首页</span>
+            </a>
+            <a href="publish.html" class="tab-item" data-page="publish">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                <span>发布</span>
+            </a>
+            <a href="digital-luggage.html" class="tab-item" data-page="digital-luggage">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                </svg>
+                <span>行李箱</span>
+            </a>
+            <a href="chat.html" class="tab-item" data-page="chat">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                </svg>
+                <span>消息</span>
+            </a>
+            <a href="profile.html" class="tab-item" data-page="profile">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+                <span>我的</span>
+            </a>
+        </div>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script src="js/app.js"></script>
+    <script>
+        function toggleBadge(element) {
+            const isSelected = element.classList.contains('selected');
+            if (isSelected) {
+                element.classList.remove('selected');
+                return;
+            }
+
+            const selected = document.querySelectorAll('.badge-option.selected');
+            if (selected.length >= 3) {
+                showToast('最多选择 3 个标签', 'error');
+                return;
+            }
+            element.classList.add('selected');
+        }
+        
+        function submitReview() {
+            const params = new URLSearchParams(window.location.search);
+            const tradeId = params.get('trade') || `trade_${Date.now()}`;
+            const fromUserId = params.get('from') || 'me';
+            const toUserId = params.get('to') || 'zhangming';
+            const selectedBadges = Array.from(document.querySelectorAll('.badge-option.selected')).map(el => el.dataset.badge);
+
+            if (window.cgRecordReview) {
+                const result = window.cgRecordReview({
+                    tradeId,
+                    fromUserId,
+                    toUserId,
+                    badges: selectedBadges,
+                });
+                if (!result.ok) {
+                    showToast('这笔交易已评价过', 'error');
+                    setTimeout(() => {
+                        window.location.href = `profile.html?user=${encodeURIComponent(toUserId)}`;
+                    }, 1200);
+                    return;
+                }
+            }
+
+            showToast('评价已提交', 'success');
+            setTimeout(() => {
+                window.location.href = `profile.html?user=${encodeURIComponent(toUserId)}`;
+            }, 1500);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const toUserId = params.get('to') || 'zhangming';
+            const partnerNameEl = document.getElementById('partnerName');
+            const partnerRouteEl = document.getElementById('partnerRoute');
+            const partnerNames = {
+                zhangming: '张明',
+                linda: 'Linda',
+                tom: 'Tom',
+                sophie: 'Sophie',
+            };
+
+            if (partnerNameEl) {
+                partnerNameEl.textContent = partnerNames[toUserId] || toUserId;
+            }
+
+            if (partnerRouteEl && params.get('route')) {
+                partnerRouteEl.textContent = params.get('route');
+            }
+        });
+    </script>
+</body>
+</html>

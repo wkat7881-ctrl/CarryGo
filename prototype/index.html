@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CarryGo - 跨国帮带管理平台</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .hero {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 4rem 1rem;
+            text-align: center;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+        
+        .hero p {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+        
+        .hero-cta {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn-white {
+            background: white;
+            color: var(--primary);
+        }
+        
+        .btn-white:hover {
+            background: var(--gray-50);
+        }
+        
+        .features {
+            padding: 4rem 1rem;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .feature-card {
+            padding: 2rem;
+            background: white;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-sm);
+            text-align: center;
+        }
+        
+        .feature-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--primary-light);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+        }
+        
+        .feature-icon svg {
+            width: 32px;
+            height: 32px;
+            color: var(--primary);
+        }
+        
+        .demo-section {
+            padding: 4rem 1rem;
+            background: var(--gray-50);
+            text-align: center;
+        }
+        
+        .demo-section h2 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .demo-frames {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 2rem;
+        }
+        
+        .demo-frame-container {
+            text-align: center;
+        }
+        
+        .demo-frame-container h3 {
+            margin-top: 1rem;
+            font-size: 1rem;
+            color: var(--gray-600);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 2rem;
+        }
+        
+        .nav-link {
+            padding: 0.75rem 1.5rem;
+            background: white;
+            border-radius: var(--radius-lg);
+            text-decoration: none;
+            color: var(--gray-700);
+            font-weight: 600;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+        
+        .nav-link:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>🧳 CarryGo</h1>
+        <p>跨国帮带管理平台 - 让每一次旅途更有价值</p>
+        <div class="hero-cta">
+            <a href="home.html" class="btn btn-white">开始体验</a>
+            <a href="#demo" class="btn btn-ghost" style="color: white; border-color: white;">查看原型</a>
+        </div>
+    </div>
+    
+    <div class="features">
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                    </svg>
+                </div>
+                <h3>数字行李箱</h3>
+                <p style="color: var(--gray-600); margin-top: 0.5rem;">可视化管理剩余容量，自动计算重量</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                </div>
+                <h3>信任体系</h3>
+                <p style="color: var(--gray-600); margin-top: 0.5rem;">用户评价与信誉积累，安全可靠</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                    </svg>
+                </div>
+                <h3>集成聊天</h3>
+                <p style="color: var(--gray-600); margin-top: 0.5rem;">便捷沟通，管理所有帮带对象</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="demo-section" id="demo">
+        <h2>📱 快速访问所有页面</h2>
+        <div class="nav-links">
+            <a href="home.html" class="nav-link">首页</a>
+            <a href="post-detail.html" class="nav-link">帖子详情</a>
+            <a href="publish.html" class="nav-link">发布帮带</a>
+            <a href="digital-luggage.html" class="nav-link">数字行李箱</a>
+            <a href="chat.html" class="nav-link">消息列表</a>
+            <a href="chat-detail.html" class="nav-link">聊天详情</a>
+            <a href="profile.html" class="nav-link">个人主页</a>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

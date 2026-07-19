@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CarryGo - 帖子详情</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            background: var(--gray-50);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .detail-card {
+            background: white;
+            margin: 1rem 1.25rem;
+            border-radius: var(--radius-xl);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .info-row {
+            display: flex;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+        
+        .info-label {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            width: 80px;
+        }
+        
+        .info-value {
+            flex: 1;
+            font-weight: 500;
+        }
+        
+        .user-card {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: white;
+            margin: 0 1.25rem 1rem;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+        }
+        
+        .action-buttons {
+            position: sticky;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 1rem 1.25rem;
+            display: flex;
+            gap: 0.75rem;
+            border-top: 1px solid var(--gray-100);
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="status-bar">
+            <span>9:41</span>
+            <span>📶 🔋</span>
+        </div>
+        <div class="phone-notch"></div>
+        
+        <div class="phone-content" style="padding-bottom: 100px;">
+            <div class="header">
+                <div class="back-btn" onclick="window.location.href='home.html'">
+                    <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </div>
+                <span style="font-weight: 600;">帖子详情</span>
+                <div style="width: 40px;"></div>
+            </div>
+            
+            <div class="detail-card">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                    <span class="badge badge-primary">🛫 提供帮带</span>
+                    <span style="color: var(--gray-500); font-size: 0.8125rem;">2小时前</span>
+                </div>
+                
+                <div style="text-align: center; margin: 1.5rem 0;">
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 1rem;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.25rem; font-weight: 700;">慕尼黑</div>
+                            <div style="font-size: 0.8125rem; color: var(--gray-500);">德国</div>
+                        </div>
+                        <div style="color: var(--primary); font-size: 1.5rem;">→</div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.25rem; font-weight: 700;">成都</div>
+                            <div style="font-size: 0.8125rem; color: var(--gray-500);">中国</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-label">出发日期</div>
+                    <div class="info-value">2024年8月18日</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">可带重量</div>
+                    <div class="info-value">总 10kg（剩余 8kg）</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">收费标准</div>
+                    <div class="info-value">普通物品 ¥50/kg</div>
+                </div>
+                <div class="info-row" style="border-bottom: none;">
+                    <div class="info-label">交易方式</div>
+                    <div class="info-value">面交或邮寄</div>
+                </div>
+            </div>
+            
+            <div class="detail-card" style="margin-top: 0;">
+                <div style="font-weight: 600; margin-bottom: 0.5rem;">帮带说明</div>
+                <p style="color: var(--gray-600; font-size: 0.875rem; line-height: 1.6;">
+                    可帮带中德两国法律允许的航空携带物品。文件15欧/份，普通物品20欧/kg。不接受奢侈品、药品等特殊物品。
+                </p>
+            </div>
+            
+            <div class="detail-card" style="margin-top: 0;">
+                <div style="font-weight: 600; margin-bottom: 0.75rem;">⚠️ 责任声明</div>
+                <div style="background: var(--gray-50); padding: 0.75rem; border-radius: var(--radius-lg); font-size: 0.8125rem; color: var(--gray-600); line-height: 1.6;">
+                    海关征税罚款、没收由物品主人自行承担。请确保所托物品须符合两国海关规定。
+                </div>
+            </div>
+            
+            <div class="user-card" onclick="window.location.href='profile.html?user=linda'">
+                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop" alt="User" class="avatar avatar-lg" style="width: 56px; height: 56px;">
+                <div style="flex: 1;">
+                    <div style="font-weight: 600; font-size: 1rem;">Linda</div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem; font-size: 0.8125rem; color: var(--gray-500);">
+                        <span>23次帮带</span>
+                    </div>
+                </div>
+                <svg style="width: 20px; height: 20px; color: var(--gray-400);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </div>
+        </div>
+        
+        <div class="action-buttons" style="position: absolute; bottom: 0; left: 0; right: 0; background: white; padding: 1rem 1.25rem; display: flex; gap: 0.75rem; border-top: 1px solid var(--gray-100); z-index: 10;">
+            <button class="btn btn-secondary" style="flex: 1;" id="contact-btn" onclick="window.location.href='chat-detail.html'">
+                💬 联系TA
+            </button>
+            <button class="btn btn-primary" style="flex: 1;" id="apply-btn" onclick="openModal('apply-modal')">
+                📦 申请帮带
+            </button>
+        </div>
+        
+        <div class="tab-bar" style="bottom: 80px;">
+            <a href="home.html" class="tab-item" data-page="home">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+                <span>首页</span>
+            </a>
+            <a href="publish.html" class="tab-item" data-page="publish">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                <span>发布</span>
+            </a>
+            <a href="digital-luggage.html" class="tab-item" data-page="digital-luggage">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                </svg>
+                <span>行李箱</span>
+            </a>
+            <a href="chat.html" class="tab-item" data-page="chat">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                </svg>
+                <span>消息</span>
+            </a>
+            <a href="profile.html" class="tab-item" data-page="profile">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+                <span>我的</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Apply Modal -->
+    <div class="modal-overlay" id="apply-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <span style="font-weight: 600; font-size: 1.125rem;">申请帮带</span>
+            <div class="modal-close" onclick="closeModal('apply-modal')" style="cursor: pointer; width: 32px; height: 32px; border-radius: 50%; background: var(--gray-100); display: flex; align-items: center; justify-content: center;">
+                <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </div>
+        </div>
+        <div class="modal-body">
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">物品名称</label>
+                <input type="text" class="input" placeholder="例如：奶粉、化妆品">
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">物品重量</label>
+                <input type="number" class="input" placeholder="输入重量（kg）">
+            </div>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">备注说明</label>
+                <textarea class="textarea" placeholder="补充说明..." rows="3"></textarea>
+            </div>
+            <button class="btn btn-primary btn-full" onclick="confirmCarry()">
+                提交申请
+            </button>
+        </div>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script src="js/app.js"></script>
+    <script>
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+        
+        function confirmCarry() {
+            closeModal('apply-modal');
+            // 跳转到申请成功页面
+            setTimeout(() => {
+                window.location.href = 'apply-success.html';
+            }, 500);
+        }
+    </script>
+</body>
+</html>
