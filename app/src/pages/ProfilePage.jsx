@@ -5,6 +5,8 @@ import TrustBadge from '../components/ui/TrustBadge'
 import { getVisibleTrustBadges, ensureDemoTrustData } from '../utils/trustBadges'
 import { ChevronRight } from 'lucide-react'
 import { supabase } from '../supabase/client'
+import { togglePostActive } from '../services/posts'
+import { useToast } from '../contexts/ToastContext'
 import { getCurrentUserId, USERS } from '../utils/auth'
 
 const CURRENT_USER_ID = getCurrentUserId()
@@ -18,9 +20,21 @@ const MENU_ITEMS = [
 
 export default function ProfilePage() {
   const navigate = useNavigate()
+  const { showToast } = useToast()
   
   const [demands, setDemands] = useState([])
   const [loading, setLoading] = useState(true)
+
+  async function handleToggleActive(postId, currentActive, e) {
+    e.stopPropagation()
+    try {
+      await togglePostActive(postId, !currentActive)
+      showToast(!currentActive ? '已重新上架至大厅' : '已隐藏', 'success')
+      loadDemands()
+    } catch (err) {
+      showToast('状态更新失败', 'error')
+    }
+  }
 
   async function loadDemands() {
     try {
@@ -109,16 +123,30 @@ export default function ProfilePage() {
                  
                  return (
                    <div key={demand.id}
-                     className="bg-white rounded-lg p-4 shadow-card flex flex-col cursor-pointer border-l-[3px] border-l-brand"
+                     className="bg-white rounded-lg p-5 shadow-card flex flex-col cursor-pointer border-l-[3px] border-l-brand relative"
                      onClick={() => navigate(activeTrade ? `/luggage/item/${activeTrade.id}` : `/post/${demand.id}`)}
                    >
-                     <div className="flex justify-between items-center mb-1">
-                       <span className="text-[15px] font-semibold text-ink">{demand.item_name} ({demand.weight}kg)</span>
-                       <span className={`text-[11px] px-2 py-0.5 rounded-[6px] font-semibold ${activeTrade ? 'bg-brand-light text-brand' : 'bg-surface text-secondary'}`}>
-                         {carrierName ? `🧳 ${carrierName} ${statusText}` : '大厅公开中'}
-                       </span>
+                     <div className="absolute top-4 right-4">
+                       <button onClick={(e) => handleToggleActive(demand.id, demand.is_active, e)}
+                         className={`text-[11px] font-semibold px-2.5 py-1 rounded-full shadow-sm border ${demand.is_active ? 'bg-green-50 text-green-700 border-green-200' : 'bg-surface text-secondary border-border'}`}>
+                         {demand.is_active ? '大厅公开中' : '已隐藏 (点击上架)'}
+                       </button>
                      </div>
-                     <div className="text-[13px] text-secondary">{demand.departure} → {demand.arrival}</div>
+
+                     <div className="flex justify-between items-center mb-2 pr-24">
+                       <span className="text-[16px] font-bold text-ink">{demand.item_name} ({demand.weight}kg)</span>
+                     </div>
+                     <div className="flex items-center gap-2 text-[13px] text-secondary">
+                       <span>{demand.departure} → {demand.arrival}</span>
+                     </div>
+                     
+                     {activeTrade && (
+                       <div className="mt-3 pt-3 border-t border-border/50">
+                         <span className="text-[12px] bg-brand-light text-brand px-2 py-1 rounded-[6px] font-semibold">
+                           🧳 {carrierName} {statusText}
+                         </span>
+                       </div>
+                     )}
                    </div>
                  )
                })}
