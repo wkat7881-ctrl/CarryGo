@@ -1,25 +1,56 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import PageHeader from '../components/layout/PageHeader'
 import Avatar from '../components/ui/Avatar'
 import { useToast } from '../contexts/ToastContext'
-import { recordReview, TRUST_BADGES } from '../utils/trustBadges'
+import { recordReview } from '../utils/trustBadges'
 import TrustTagSelector from '../components/features/TrustTagSelector'
 import { Check } from 'lucide-react'
+import { supabase } from '../supabase/client'
 
 export default function ReviewPage() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const { showToast } = useToast()
 
-  const tradeId   = params.get('trade') || `trade_${Date.now()}`
-  const toUserId  = params.get('to')    || 'linda'
-  const fromUserId = params.get('from') || 'me'
+  const tradeId   = params.get('trade')
+  const toUserId  = params.get('to')
+  const fromUserId = params.get('from')
 
-  const PARTNER_NAMES = { linda: 'Linda', tom: 'Tom', sophie: 'Sophie', zhangming: '张明' }
-  const partnerName = PARTNER_NAMES[toUserId] || toUserId
+  const [partner, setPartner] = useState(null)
+  const [trade, setTrade] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   const [selected, setSelected] = useState([])
+
+  useEffect(() => {
+    async function loadData() {
+      if (!tradeId || !toUserId) {
+        setLoading(false)
+        return
+      }
+      try {
+        const { data: t, error: tErr } = await supabase
+          .from('trades')
+          .select('*, post:posts!trades_post_id_fkey(*)')
+          .eq('id', tradeId)
+          .single()
+        if (!tErr) setTrade(t)
+
+        const { data: u, error: uErr } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', toUserId)
+          .single()
+        if (!uErr) setPartner(u)
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadData()
+  }, [tradeId, toUserId])
 
   function toggleBadge(id) {
     setSelected(prev =>
@@ -33,16 +64,23 @@ export default function ReviewPage() {
     const result = recordReview({ tradeId, fromUserId, toUserId, badges: selected })
     if (!result.ok) {
       showToast('这笔交易已评价过', 'error')
-      setTimeout(() => navigate(`/profile/${toUserId}`), 1200)
+      setTimeout(() => navigate(`/`), 1200) // Navigate to Home
       return
     }
     showToast('评价已提交', 'success')
-    setTimeout(() => navigate(`/profile/${toUserId}`), 1500)
+    setTimeout(() => navigate(`/`), 1500) // Navigate to Home
   }
+
+  if (loading) {
+    return <div className="flex-1 bg-surface flex items-center justify-center text-muted text-[14px]">加载中...</div>
+  }
+
+  const partnerName = partner?.name || '用户'
+  const partnerAvatar = partner?.avatar_url || ''
 
   return (
     <div className="flex flex-col h-full bg-surface">
-      <PageHeader title="评价" showBack onBack={() => navigate('/luggage')} />
+      <PageHeader title="评价" showBack onBack={() => navigate(-1)} />
 
       <div className="flex-1 overflow-y-auto pb-36 scrollbar-hide">
         {/* Success header strip */}
@@ -56,10 +94,12 @@ export default function ReviewPage() {
         <div className="px-5 pt-5">
           {/* Partner info */}
           <div className="bg-white rounded-lg p-5 shadow-card flex items-center gap-3 mb-5 border-l-[3px] border-l-brand">
-            <Avatar src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop" alt={partnerName} size="lg" />
+            <Avatar src={partnerAvatar} alt={partnerName} size="lg" />
             <div>
               <div className="font-semibold text-[16px] text-ink">{partnerName}</div>
-              <div className="text-[13px] text-secondary">Munich → Chengdu · 2kg</div>
+              <div className="text-[13px] text-secondary">
+                {trade?.post?.departure} → {trade?.post?.arrival} · {trade?.item_weight}kg
+              </div>
             </div>
           </div>
 

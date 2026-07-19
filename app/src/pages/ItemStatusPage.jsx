@@ -50,10 +50,12 @@ export default function ItemStatusPage() {
     try {
       if (isCarrier) {
         await updateTrade(trade.id, { carrier_completed: true })
-        showToast('已标记完成交付，等待发货人确认', 'success')
+        showToast('已标记完成交付，前往评价', 'success')
+        setTimeout(() => navigate(`/review?trade=${trade.id}&to=${trade.shipper_id}&from=${trade.carrier_id}`), 600)
       } else {
         await updateTrade(trade.id, { shipper_completed: true, status: 'completed' })
-        showToast('已确认收货，订单完成！', 'success')
+        showToast('已确认收货，前往评价', 'success')
+        setTimeout(() => navigate(`/review?trade=${trade.id}&to=${trade.carrier_id}&from=${trade.shipper_id}`), 600)
       }
       // reload to reflect changes
       const { data, error } = await supabase
