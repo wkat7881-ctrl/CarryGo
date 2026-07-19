@@ -152,6 +152,86 @@ function EditSuitcaseModal({ suitcase, onClose, onSuccess }) {
   )
 }
 
+function SuitcaseCard({ suitcase, onEdit, onToggleActive, onDeleteItem, onComplete }) {
+  const navigate = useNavigate()
+  const [isExpanded, setIsExpanded] = useState(true)
+  
+  const activeTrades = suitcase.trades.filter(t => t.status === 'confirmed' || t.status === 'pending' || t.status === 'completed')
+  const used = activeTrades.reduce((s, t) => s + t.item_weight, 0)
+  
+  const allCompleted = activeTrades.length > 0 && activeTrades.every(t => t.status === 'completed')
+
+  return (
+    <div className="bg-white rounded-lg shadow-card p-5 relative">
+      <div className="absolute top-5 right-5 flex items-center gap-2">
+        <button onClick={() => onEdit(suitcase)}
+          className="text-[11px] font-semibold px-2.5 py-1 rounded-full shadow-sm border bg-surface text-secondary border-border hover:bg-border transition-colors">
+          编辑
+        </button>
+        <button onClick={() => onToggleActive(suitcase.id, suitcase.is_active)}
+          className={`text-[11px] font-semibold px-2.5 py-1 rounded-full shadow-sm border ${suitcase.is_active ? 'bg-green-50 text-green-700 border-green-200' : 'bg-surface text-secondary border-border'}`}>
+          {suitcase.is_active ? '大厅公开中' : '未公开'}
+        </button>
+      </div>
+
+      <div className="text-[20px] font-bold text-ink mb-1">{suitcase.item_name || `${suitcase.departure} → ${suitcase.arrival}`}</div>
+      <div className="flex gap-2 items-center text-[13px] text-muted mb-5">
+        <span className="font-medium text-ink bg-surface px-2 py-0.5 rounded-[4px]">{suitcase.departure || '-'} → {suitcase.arrival || '-'}</span>
+        <span>{new Date(suitcase.date).toLocaleDateString()}</span>
+      </div>
+      
+      <CapacityBar used={used} total={suitcase.weight} />
+
+      {activeTrades.length > 0 && (
+        <div className="flex items-center justify-between mt-6 mb-3">
+          <div className="section-label m-0">已绑定物品</div>
+          <div className="flex items-center gap-2">
+            {allCompleted && (
+              <button onClick={() => onComplete(suitcase)} className="text-[12px] font-medium text-green-600 bg-green-50 px-2.5 py-1 rounded-full border border-green-200 shadow-sm hover:bg-green-100 transition-colors">
+                标记为已完成
+              </button>
+            )}
+            <button onClick={() => setIsExpanded(!isExpanded)} className="text-secondary p-1 bg-surface rounded-full hover:bg-border transition-colors">
+              <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+            </button>
+          </div>
+        </div>
+      )}
+      
+      {isExpanded && activeTrades.length > 0 && (
+        <div className="space-y-3">
+          {activeTrades.map(trade => (
+            <div
+              key={trade.id}
+              className={`bg-white rounded-lg p-4 shadow-card flex items-center gap-3 cursor-pointer border-l-[3px] ${trade.status === 'pending' ? 'border-l-amber-400' : 'border-l-brand'}`}
+              onClick={() => navigate(`/luggage/item/${trade.id}`)}
+            >
+              <div className="w-10 h-10 bg-brand-light rounded-md flex items-center justify-center text-[20px] flex-shrink-0">📦</div>
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-[15px] text-ink truncate">{trade.item_name}</div>
+                <div className="flex gap-2 mt-0.5 text-[13px] text-secondary">
+                  <span>{trade.item_weight}kg</span><span>·</span><span>{trade.shipper?.name}</span>
+                </div>
+              </div>
+              <StatusTag status={trade.status} />
+              <div className="flex items-center gap-2 ml-1">
+                <button onClick={async e => { 
+                  e.stopPropagation()
+                  const conv = await getOrCreateConversation(trade.post_id, trade.carrier_id, trade.shipper_id)
+                  navigate(suitcase.type === 'provide' ? `/chat/${conv.id}` : `/chat/proposal/${conv.id}`) 
+                }}
+                  className="w-8 h-8 rounded-full bg-surface text-[14px] flex items-center justify-center hover:bg-border transition-colors">💬</button>
+                <button onClick={e => { e.stopPropagation(); onDeleteItem(trade) }}
+                  className="w-8 h-8 rounded-full bg-red-50 text-red-500 text-[14px] font-bold flex items-center justify-center hover:bg-red-100 transition-colors">删</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function DigitalLuggagePage() {
   const navigate = useNavigate()
   const { showToast } = useToast()
@@ -214,6 +294,17 @@ export default function DigitalLuggagePage() {
     }
   }
 
+  async function handleCompleteSuitcase(suitcase) {
+    if (!window.confirm(`确定要将“${suitcase.item_name || suitcase.departure + '→' + suitcase.arrival}”标记为已完成并移至历史记录吗？`)) return
+    try {
+      await updatePost(suitcase.id, { date: '1970-01-01', is_active: false })
+      showToast('已移至历史记录', 'success')
+      loadSuitcases()
+    } catch (err) {
+      showToast('操作失败', 'error')
+    }
+  }
+
   async function handleDeleteItem(trade) {
     if (!window.confirm(`确定要移除 ${trade.item_name} 吗？这会拒绝或取消该笔帮带。`)) return
     try {
@@ -268,64 +359,16 @@ export default function DigitalLuggagePage() {
                   <Plus className="w-4 h-4" /> 新建额外的行李箱
                 </button>
                 
-                {suitcases.map(suitcase => {
-                  const activeTrades = suitcase.trades.filter(t => t.status === 'confirmed' || t.status === 'pending' || t.status === 'completed')
-                  const used = activeTrades.reduce((s, t) => s + t.item_weight, 0)
-                  
-                  return (
-                    <div key={suitcase.id} className="bg-white rounded-lg shadow-card p-5 relative">
-                      <div className="absolute top-5 right-5 flex items-center gap-2">
-                        <button onClick={() => setEditingSuitcase(suitcase)}
-                          className="text-[11px] font-semibold px-2.5 py-1 rounded-full shadow-sm border bg-surface text-secondary border-border hover:bg-border transition-colors">
-                          编辑
-                        </button>
-                        <button onClick={() => handleToggleActive(suitcase.id, suitcase.is_active)}
-                          className={`text-[11px] font-semibold px-2.5 py-1 rounded-full shadow-sm border ${suitcase.is_active ? 'bg-green-50 text-green-700 border-green-200' : 'bg-surface text-secondary border-border'}`}>
-                          {suitcase.is_active ? '大厅公开中' : '未公开'}
-                        </button>
-                      </div>
-
-                      <div className="text-[20px] font-bold text-ink mb-1">{suitcase.item_name || `${suitcase.departure} → ${suitcase.arrival}`}</div>
-                      <div className="flex gap-2 items-center text-[13px] text-muted mb-5">
-                        <span className="font-medium text-ink bg-surface px-2 py-0.5 rounded-[4px]">{suitcase.departure || '-'} → {suitcase.arrival || '-'}</span>
-                        <span>{new Date(suitcase.date).toLocaleDateString()}</span>
-                      </div>
-                      
-                      <CapacityBar used={used} total={suitcase.weight} />
-
-                      {activeTrades.length > 0 && <div className="section-label mt-6 mb-3">已绑定物品</div>}
-                      
-                      <div className="space-y-3">
-                        {activeTrades.map(trade => (
-                          <div
-                            key={trade.id}
-                            className={`bg-white rounded-lg p-4 shadow-card flex items-center gap-3 cursor-pointer border-l-[3px] ${trade.status === 'pending' ? 'border-l-amber-400' : 'border-l-brand'}`}
-                            onClick={() => navigate(`/luggage/item/${trade.id}`)}
-                          >
-                            <div className="w-10 h-10 bg-brand-light rounded-md flex items-center justify-center text-[20px] flex-shrink-0">📦</div>
-                            <div className="flex-1 min-w-0">
-                              <div className="font-semibold text-[15px] text-ink truncate">{trade.item_name}</div>
-                              <div className="flex gap-2 mt-0.5 text-[13px] text-secondary">
-                                <span>{trade.item_weight}kg</span><span>·</span><span>{trade.shipper?.name}</span>
-                              </div>
-                            </div>
-                            <StatusTag status={trade.status} />
-                            <div className="flex items-center gap-2 ml-1">
-                              <button onClick={async e => { 
-                                e.stopPropagation()
-                                const conv = await getOrCreateConversation(trade.post_id, trade.carrier_id, trade.shipper_id)
-                                navigate(suitcase.type === 'provide' ? `/chat/${conv.id}` : `/chat/proposal/${conv.id}`) 
-                              }}
-                                className="w-8 h-8 rounded-full bg-surface text-[14px] flex items-center justify-center hover:bg-border transition-colors">💬</button>
-                              <button onClick={e => { e.stopPropagation(); handleDeleteItem(trade) }}
-                                className="w-8 h-8 rounded-full bg-red-50 text-red-500 text-[14px] font-bold flex items-center justify-center hover:bg-red-100 transition-colors">删</button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )
-                })}
+                {suitcases.map(suitcase => (
+                  <SuitcaseCard 
+                    key={suitcase.id}
+                    suitcase={suitcase}
+                    onEdit={setEditingSuitcase}
+                    onToggleActive={handleToggleActive}
+                    onDeleteItem={handleDeleteItem}
+                    onComplete={handleCompleteSuitcase}
+                  />
+                ))}
               </>
             )}
           </div>
