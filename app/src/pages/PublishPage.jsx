@@ -5,7 +5,8 @@ import { searchCities, DEPARTURE_QUICK_CITIES, ARRIVAL_QUICK_CITIES } from '../u
 import { ChevronLeft } from 'lucide-react'
 import { createPost } from '../services/posts'
 
-const CURRENT_USER_ID = '11111111-1111-1111-1111-111111111111'
+import { getCurrentUserId } from '../utils/auth'
+const CURRENT_USER_ID = getCurrentUserId()
 
 // ─── Step indicator ───────────────────────────────────────────────────────────
 function Stepper({ current, total }) {

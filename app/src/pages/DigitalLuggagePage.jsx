@@ -10,7 +10,8 @@ import { updateTradeStatus } from '../services/orders'
 import { sendMessage, getOrCreateConversation } from '../services/messages'
 import { X, Plus, ChevronDown } from 'lucide-react'
 
-const CURRENT_USER_ID = '11111111-1111-1111-1111-111111111111'
+import { getCurrentUserId } from '../utils/auth'
+const CURRENT_USER_ID = getCurrentUserId()
 
 // --- Create Private Suitcase Modal ---
 function CreateSuitcaseModal({ onClose, onSuccess }) {

@@ -8,7 +8,8 @@ import { supabase } from '../supabase/client'
 import { sendMessage } from '../services/messages'
 import { updateTradeStatus } from '../services/orders'
 
-const CURRENT_USER_ID = '11111111-1111-1111-1111-111111111111'
+import { getCurrentUserId } from '../utils/auth'
+const CURRENT_USER_ID = getCurrentUserId()
 
 function ProposalCard({ trade, onAccept, onReject }) {
   return (

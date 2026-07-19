@@ -24,6 +24,8 @@ import { supabase } from './supabase/client'
 // Initialize demo trust data
 ensureDemoTrustData()
 
+import UserSwitcher from './components/features/UserSwitcher'
+
 export default function App() {
   useEffect(() => {
     async function checkConnection() {
@@ -49,6 +51,7 @@ export default function App() {
 
   return (
     <ToastProvider>
+      <UserSwitcher />
       <BrowserRouter>
         {/* Mobile-first wrapper — centers the app on desktop */}
         <div className="min-h-dvh bg-[#EEEDF8] flex items-start justify-center">
