@@ -7,11 +7,24 @@ import { ChevronLeft, Send } from 'lucide-react'
 import { supabase } from '../supabase/client'
 import { sendMessage } from '../services/messages'
 import { updateTradeStatus } from '../services/orders'
-
 import { getCurrentUserId } from '../utils/auth'
+
 const CURRENT_USER_ID = getCurrentUserId()
 
-function ApplicationCard({ trade, onAccept, onReject }) {
+function ApplicationCard({ trade, isActionable, onAccept, onReject }) {
+  if (!isActionable) {
+    return (
+      <div className="mx-3 mb-3 p-4 bg-surface rounded-lg border border-border">
+        <div className="flex justify-between items-center mb-2">
+          <span className="font-semibold text-secondary text-[15px]">📦 帮带申请已发送</span>
+          <span className="text-[11px] bg-white text-ink px-2 py-0.5 rounded-[6px] font-semibold shadow-sm border border-border">等待对方确认</span>
+        </div>
+        <div className="text-[13px] text-secondary leading-relaxed">
+          你已申请让对方帮带 {trade.item_name} ({trade.item_weight}kg)。等待对方确认。
+        </div>
+      </div>
+    )
+  }
   return (
     <div className="mx-3 mb-3 p-4 bg-brand-light rounded-lg border border-brand/20">
       <div className="flex justify-between items-center mb-3">
@@ -44,7 +57,7 @@ export default function ChatDetailPage() {
   
   const [conversation, setConversation] = useState(null)
   const [messages, setMessages] = useState([])
-  const [pendingTrade, setPendingTrade] = useState(null)
+  const [latestTrade, setLatestTrade] = useState(null)
   
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(true)
@@ -87,21 +100,19 @@ export default function ChatDetailPage() {
       const isUserOne = conv.user_one_id === CURRENT_USER_ID
       const partner = isUserOne ? conv.user_two : conv.user_one
 
-      // explicitly name the foreign key for posts to avoid ambiguity
       const { data: trades, error: tradeError } = await supabase
         .from('trades')
         .select('*, post:posts!trades_post_id_fkey(*), shipper:users!trades_shipper_id_fkey(*)')
         .eq('post_id', conv.post_id)
-        .eq('carrier_id', CURRENT_USER_ID)
-        .eq('shipper_id', partner.id)
-        .eq('status', 'pending')
+        .in('shipper_id', [CURRENT_USER_ID, partner.id])
+        .in('carrier_id', [CURRENT_USER_ID, partner.id])
         .order('created_at', { ascending: false })
 
       if (tradeError) throw tradeError
       if (trades && trades.length > 0) {
-        setPendingTrade(trades[0])
+        setLatestTrade(trades[0])
       } else {
-        setPendingTrade(null)
+        setLatestTrade(null)
       }
     } catch (err) {
       console.error('Failed to load conversation:', err)
@@ -147,12 +158,11 @@ export default function ChatDetailPage() {
   }
 
   async function handleAccept() {
-    if (!pendingTrade) return
+    if (!latestTrade) return
     try {
-      await updateTradeStatus(pendingTrade.id, 'confirmed')
+      await updateTradeStatus(latestTrade.id, 'confirmed')
       await sendMessage(conversation.id, CURRENT_USER_ID, '✅ 你已确认帮带，物品已加入行李箱。', 'system')
       showToast('已确认，物品已加入你的行李箱', 'success')
-      setPendingTrade(null)
       loadConversationAndMessages()
     } catch (err) {
       console.error('Failed to accept trade:', err)
@@ -160,12 +170,11 @@ export default function ChatDetailPage() {
   }
 
   async function handleReject() {
-    if (!pendingTrade) return
+    if (!latestTrade) return
     try {
-      await updateTradeStatus(pendingTrade.id, 'cancelled')
+      await updateTradeStatus(latestTrade.id, 'cancelled')
       await sendMessage(conversation.id, CURRENT_USER_ID, '❌ 你已拒绝该帮带申请。', 'system')
       showToast('已拒绝该申请', 'info')
-      setPendingTrade(null)
       loadConversationAndMessages()
     } catch (err) {
       console.error('Failed to reject trade:', err)
@@ -180,6 +189,9 @@ export default function ChatDetailPage() {
   const partner = isUserOne ? conversation.user_two : conversation.user_one
   const postPrefix = conversation.post?.type === 'provide' ? '🛫 可帮带' : '📦 寻求帮带'
   const postContext = `${postPrefix} · ${conversation.post?.departure} → ${conversation.post?.arrival}`
+
+  // For a Provide post application, the carrier is the owner of the post.
+  const isActionable = latestTrade && latestTrade.status === 'pending' && CURRENT_USER_ID === latestTrade.carrier_id
 
   return (
     <div className="flex flex-col h-full bg-surface">
@@ -197,13 +209,13 @@ export default function ChatDetailPage() {
       <ContextCard 
         itemName={conversation.post?.item_name || '帮带说明'} 
         itemWeight={`${conversation.post?.weight}kg`} 
-        status={pendingTrade ? 'pending' : 'confirmed'} 
-        detailLink={pendingTrade ? `/post/${conversation.post_id}` : `/luggage/item/${pendingTrade?.id || ''}`} 
+        status={latestTrade ? latestTrade.status : 'pending'} 
+        detailLink={latestTrade && latestTrade.status !== 'pending' ? `/luggage/item/${latestTrade.id}` : `/post/${conversation.post_id}`} 
       />
 
       <div className="flex-1 overflow-y-auto py-3 scrollbar-hide">
-        {pendingTrade && (
-          <ApplicationCard trade={pendingTrade} onAccept={handleAccept} onReject={handleReject} />
+        {latestTrade && latestTrade.status === 'pending' && (
+          <ApplicationCard trade={latestTrade} isActionable={isActionable} onAccept={handleAccept} onReject={handleReject} />
         )}
         
         {messages.map(m => (

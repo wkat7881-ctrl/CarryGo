@@ -7,11 +7,25 @@ import { ChevronLeft, Send } from 'lucide-react'
 import { supabase } from '../supabase/client'
 import { sendMessage } from '../services/messages'
 import { updateTradeStatus } from '../services/orders'
-
 import { getCurrentUserId } from '../utils/auth'
+
 const CURRENT_USER_ID = getCurrentUserId()
 
-function ProposalCard({ trade, onAccept, onReject }) {
+function ProposalCard({ trade, isActionable, onAccept, onReject }) {
+  if (!isActionable) {
+    return (
+      <div className="mx-3 mb-3 p-4 bg-surface rounded-lg border border-border">
+        <div className="flex justify-between items-center mb-2">
+          <span className="font-semibold text-secondary text-[15px]">🧳 帮带提议已发送</span>
+          <span className="text-[11px] bg-white text-ink px-2 py-0.5 rounded-[6px] font-semibold shadow-sm border border-border">等待对方确认</span>
+        </div>
+        <div className="text-[13px] text-secondary leading-relaxed">
+          你已提议帮带 {trade.item_name} ({trade.item_weight}kg)，放入 {trade.carrier_post?.departure} → {trade.carrier_post?.arrival} 的行李箱。等待对方确认。
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="mx-3 mb-3 p-4 bg-amber-50 rounded-lg border border-amber-200">
       <div className="flex justify-between items-center mb-3">
@@ -44,7 +58,7 @@ export default function ChatDetailProposalPage() {
   
   const [conversation, setConversation] = useState(null)
   const [messages, setMessages] = useState([])
-  const [pendingTrade, setPendingTrade] = useState(null)
+  const [latestTrade, setLatestTrade] = useState(null)
   
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(true)
@@ -87,21 +101,19 @@ export default function ChatDetailProposalPage() {
       const isUserOne = conv.user_one_id === CURRENT_USER_ID
       const partner = isUserOne ? conv.user_two : conv.user_one
 
-      // explicitly name the foreign key for posts to avoid ambiguity
       const { data: trades, error: tradeError } = await supabase
         .from('trades')
         .select('*, post:posts!trades_post_id_fkey(*), carrier_post:posts!trades_carrier_post_id_fkey(*), carrier:users!trades_carrier_id_fkey(*)')
         .eq('post_id', conv.post_id)
-        .eq('shipper_id', CURRENT_USER_ID)
-        .eq('carrier_id', partner.id)
-        .eq('status', 'pending')
+        .in('shipper_id', [CURRENT_USER_ID, partner.id])
+        .in('carrier_id', [CURRENT_USER_ID, partner.id])
         .order('created_at', { ascending: false })
 
       if (tradeError) throw tradeError
       if (trades && trades.length > 0) {
-        setPendingTrade(trades[0])
+        setLatestTrade(trades[0])
       } else {
-        setPendingTrade(null)
+        setLatestTrade(null)
       }
     } catch (err) {
       console.error('Failed to load conversation:', err)
@@ -147,12 +159,11 @@ export default function ChatDetailProposalPage() {
   }
 
   async function handleAccept() {
-    if (!pendingTrade) return
+    if (!latestTrade) return
     try {
-      await updateTradeStatus(pendingTrade.id, 'confirmed')
+      await updateTradeStatus(latestTrade.id, 'confirmed')
       await sendMessage(conversation.id, CURRENT_USER_ID, '✅ 你已同意帮带，物品已放入对方行李箱。', 'system')
       showToast('已同意，物品已加入对方行李箱', 'success')
-      setPendingTrade(null)
       loadConversationAndMessages()
     } catch (err) {
       console.error('Failed to accept trade:', err)
@@ -160,12 +171,11 @@ export default function ChatDetailProposalPage() {
   }
 
   async function handleReject() {
-    if (!pendingTrade) return
+    if (!latestTrade) return
     try {
-      await updateTradeStatus(pendingTrade.id, 'cancelled')
+      await updateTradeStatus(latestTrade.id, 'cancelled')
       await sendMessage(conversation.id, CURRENT_USER_ID, '❌ 你已拒绝该帮带提议。', 'system')
       showToast('已拒绝该提议', 'info')
-      setPendingTrade(null)
       loadConversationAndMessages()
     } catch (err) {
       console.error('Failed to reject trade:', err)
@@ -180,6 +190,9 @@ export default function ChatDetailProposalPage() {
   const partner = isUserOne ? conversation.user_two : conversation.user_one
   const postPrefix = conversation.post?.type === 'provide' ? '🛫 可帮带' : '📦 寻求帮带'
   const postContext = `${postPrefix} · ${conversation.post?.departure} → ${conversation.post?.arrival}`
+
+  // For a Seek post proposal, the shipper is the owner of the post.
+  const isActionable = latestTrade && latestTrade.status === 'pending' && CURRENT_USER_ID === latestTrade.shipper_id
 
   return (
     <div className="flex flex-col h-full bg-surface">
@@ -197,13 +210,13 @@ export default function ChatDetailProposalPage() {
       <ContextCard 
         itemName={conversation.post?.item_name || '帮带说明'} 
         itemWeight={`${conversation.post?.weight}kg`} 
-        status={pendingTrade ? 'pending' : 'confirmed'} 
-        detailLink={pendingTrade ? `/request/${conversation.post_id}` : `/luggage/item/${pendingTrade?.id || ''}`} 
+        status={latestTrade ? latestTrade.status : 'pending'} 
+        detailLink={latestTrade && latestTrade.status !== 'pending' ? `/luggage/item/${latestTrade.id}` : `/request/${conversation.post_id}`} 
       />
 
       <div className="flex-1 overflow-y-auto py-3 scrollbar-hide">
-        {pendingTrade && (
-          <ProposalCard trade={pendingTrade} onAccept={handleAccept} onReject={handleReject} />
+        {latestTrade && latestTrade.status === 'pending' && (
+          <ProposalCard trade={latestTrade} isActionable={isActionable} onAccept={handleAccept} onReject={handleReject} />
         )}
         
         {messages.map(m => (
