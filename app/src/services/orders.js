@@ -34,12 +34,12 @@ export async function updateTradeStatus(tradeId, status) {
 }
 
 /**
- * Mark a trade as carrier_completed
+ * Update any trade fields (e.g. carrier_completed, shipper_completed, status)
  */
-export async function updateTradeCompletion(tradeId, isCarrierCompleted) {
+export async function updateTrade(tradeId, updates) {
   const { data, error } = await supabase
     .from('trades')
-    .update({ carrier_completed: isCarrierCompleted })
+    .update(updates)
     .eq('id', tradeId)
     .select()
 

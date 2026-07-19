@@ -5,7 +5,7 @@ import Avatar from '../components/ui/Avatar'
 import { Check } from 'lucide-react'
 import { useToast } from '../contexts/ToastContext'
 import { supabase } from '../supabase/client'
-import { updateTradeCompletion } from '../services/orders'
+import { updateTrade } from '../services/orders'
 
 import { getCurrentUserId } from '../utils/auth'
 const CURRENT_USER_ID = getCurrentUserId()
@@ -48,8 +48,13 @@ export default function ItemStatusPage() {
   async function handleComplete() {
     setSubmitting(true)
     try {
-      await updateTradeCompletion(trade.id, true)
-      showToast('已标记完成交付，等待发货人确认', 'success')
+      if (isCarrier) {
+        await updateTrade(trade.id, { carrier_completed: true })
+        showToast('已标记完成交付，等待发货人确认', 'success')
+      } else {
+        await updateTrade(trade.id, { shipper_completed: true, status: 'completed' })
+        showToast('已确认收货，订单完成！', 'success')
+      }
       // reload to reflect changes
       const { data, error } = await supabase
         .from('trades')
@@ -159,8 +164,12 @@ export default function ItemStatusPage() {
         ) : (
           <>
             <button className="flex-1 btn-outline">💬 消息</button>
-            <button className="flex-1 btn-primary disabled:opacity-50" disabled>
-              {trade.shipper_completed ? '✅ 已确认' : '待承接人标记完成'}
+            <button 
+              className="flex-1 btn-primary disabled:opacity-50" 
+              onClick={handleComplete}
+              disabled={submitting || !trade.carrier_completed || trade.shipper_completed}
+            >
+              {trade.shipper_completed ? '✅ 订单已完成' : trade.carrier_completed ? '📦 确认收到物品' : '待承接人标记完成'}
             </button>
           </>
         )}
