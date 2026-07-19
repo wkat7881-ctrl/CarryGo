@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { useToast } from '../contexts/ToastContext'
 import { searchCities, DEPARTURE_QUICK_CITIES, ARRIVAL_QUICK_CITIES } from '../utils/cityDirectory'
 import { ChevronLeft } from 'lucide-react'
+import { createPost } from '../services/posts'
+
+const CURRENT_USER_ID = '11111111-1111-1111-1111-111111111111'
 
 // ─── Step indicator ───────────────────────────────────────────────────────────
 function Stepper({ current, total }) {
@@ -98,14 +101,39 @@ export default function PublishPage() {
   const [weight, setWeight] = useState(10)
   const [seekWeight, setSeekWeight] = useState(2)
   const [itemName, setItemName] = useState('')
+  const [description, setDescription] = useState('')
+  
+  const [loading, setLoading] = useState(false)
 
   const totalSteps = 4
 
-  function nextStep() {
-    if (step < totalSteps) setStep(s => s + 1)
-    else {
+  async function nextStep() {
+    if (step < totalSteps) {
+      setStep(s => s + 1)
+      return
+    }
+
+    try {
+      setLoading(true)
+      const postData = {
+        user_id: CURRENT_USER_ID,
+        type,
+        departure,
+        arrival,
+        weight: type === 'provide' ? weight : seekWeight,
+        item_name: type === 'seek' ? itemName : null,
+        price_standard: type === 'provide' ? '¥50/kg' : null,
+        description: description,
+        arrival_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        is_active: type === 'provide'
+      }
+      await createPost(postData)
       showToast('发布成功！', 'success')
       setTimeout(() => navigate(type === 'provide' ? '/luggage' : '/'), 1500)
+    } catch (err) {
+      showToast('发布失败', 'error')
+    } finally {
+      setLoading(false)
     }
   }
   function prevStep() { if (step > 1) setStep(s => s - 1) }
@@ -170,7 +198,7 @@ export default function PublishPage() {
                 <span className="text-[14px] font-semibold text-ink">收费标准</span>
                 <span className="font-bold text-ink">¥50/kg</span>
               </div>
-              <input type="text" placeholder="添加价格说明..." className="input" />
+              <input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="添加价格说明..." className="input" />
             </div>
           </div>
         )}
@@ -189,7 +217,7 @@ export default function PublishPage() {
             </div>
             <div>
               <div className="font-semibold text-[15px] text-ink mb-2">物品描述</div>
-              <textarea placeholder="详细描述你的物品，包括品牌、数量、是否有特殊要求等" className="input min-h-[100px] resize-none" />
+              <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="详细描述你的物品，包括品牌、数量、是否有特殊要求等" className="input min-h-[100px] resize-none" />
             </div>
           </div>
         )}
@@ -236,8 +264,8 @@ export default function PublishPage() {
       {/* Bottom Actions */}
       <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-border px-5 py-4 flex gap-3 z-10 pb-8">
         <button onClick={prevStep} className={`flex-1 btn-outline ${step === 1 ? 'invisible' : ''}`}>返回</button>
-        <button onClick={nextStep} className="flex-1 btn-primary">
-          {step === totalSteps ? '发布' : '继续'}
+        <button onClick={nextStep} disabled={loading} className="flex-1 btn-primary disabled:opacity-50">
+          {step === totalSteps ? (loading ? '发布中...' : '发布') : '继续'}
         </button>
       </div>
     </div>
