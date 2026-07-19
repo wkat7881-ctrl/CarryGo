@@ -5,7 +5,7 @@ CarryGo connects international travelers with people who need items shipped betw
 ## Language
 
 **Post**:
-A public listing created by a User indicating travel plans with available luggage capacity (Provide) or an item that needs to be carried (Seek).
+A public listing created by a User indicating travel plans with available luggage capacity (Provide) or an item that needs to be carried (Seek). A Provide Post can be manually marked inactive by the Carrier to stop accepting new Trades.
 _Avoid_: Ad, Listing, Article
 
 **Suitcase**:
