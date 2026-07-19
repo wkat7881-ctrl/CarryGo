@@ -122,9 +122,9 @@ export default function PublishPage() {
         arrival,
         weight: type === 'provide' ? weight : seekWeight,
         item_name: type === 'seek' ? itemName : null,
-        price_standard: type === 'provide' ? '¥50/kg' : null,
-        description: description,
-        arrival_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        price_info: type === 'provide' ? description : null,
+        item_desc: type === 'seek' ? description : null,
+        date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         is_active: type === 'provide'
       }
       await createPost(postData)

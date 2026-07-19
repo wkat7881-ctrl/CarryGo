@@ -29,7 +29,7 @@ function CreateSuitcaseModal({ onClose, onSuccess }) {
         arrival,
         weight,
         is_active: false, // Private by default
-        arrival_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
       })
       onSuccess()
     } catch (err) {
@@ -101,7 +101,7 @@ export default function DigitalLuggagePage() {
       const past = []
 
       for (const p of data) {
-        if (new Date(p.arrival_date) > now) active.push(p)
+        if (new Date(p.date) > now) active.push(p)
         else past.push(p)
       }
 
