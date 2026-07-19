@@ -13,10 +13,9 @@ import { X, Plus, ChevronDown } from 'lucide-react'
 import { getCurrentUserId } from '../utils/auth'
 const CURRENT_USER_ID = getCurrentUserId()
 
-// --- Create Private Suitcase Modal ---
+// --- Create Suitcase Modal ---
 function CreateSuitcaseModal({ onClose, onSuccess }) {
-  const [departure, setDeparture] = useState('巴黎')
-  const [arrival, setArrival] = useState('上海')
+  const [suitcaseName, setSuitcaseName] = useState('我的行李箱')
   const [weight, setWeight] = useState(15)
   const [loading, setLoading] = useState(false)
 
@@ -26,11 +25,12 @@ function CreateSuitcaseModal({ onClose, onSuccess }) {
       await createPost({
         user_id: CURRENT_USER_ID,
         type: 'provide',
-        departure,
-        arrival,
+        item_name: suitcaseName, // Store suitcase name here
+        departure: '',
+        arrival: '',
         weight,
-        is_active: false, // Private by default
-        date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        is_active: false,
+        date: '2099-12-31' // Never expires for generic suitcases
       })
       onSuccess()
     } catch (err) {
@@ -44,17 +44,13 @@ function CreateSuitcaseModal({ onClose, onSuccess }) {
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-5 animate-fade-in">
       <div className="bg-white rounded-xl w-full max-w-sm overflow-hidden animate-slide-up">
         <div className="flex justify-between items-center p-4 border-b border-border">
-          <h3 className="font-bold text-[16px] text-ink">🆕 创建私人行李箱</h3>
+          <h3 className="font-bold text-[16px] text-ink">🆕 新建行李箱</h3>
           <button onClick={onClose} className="p-1 rounded-full hover:bg-surface"><X className="w-5 h-5 text-secondary" /></button>
         </div>
         <div className="p-5 space-y-4">
           <div>
-            <label className="block text-[13px] font-semibold text-ink mb-1">出发地</label>
-            <input className="input w-full" value={departure} onChange={e => setDeparture(e.target.value)} />
-          </div>
-          <div>
-            <label className="block text-[13px] font-semibold text-ink mb-1">目的地</label>
-            <input className="input w-full" value={arrival} onChange={e => setArrival(e.target.value)} />
+            <label className="block text-[13px] font-semibold text-ink mb-1">行李箱名称</label>
+            <input className="input w-full" value={suitcaseName} onChange={e => setSuitcaseName(e.target.value)} placeholder="例如：7月回国行李箱" />
           </div>
           <div>
             <label className="block text-[13px] font-semibold text-ink mb-1">总容量 (kg)</label>
@@ -173,15 +169,15 @@ export default function DigitalLuggagePage() {
                 <div className="text-[48px] mb-4">🧳</div>
                 <div className="text-[16px] font-bold text-ink mb-2">还没有可用的行李箱</div>
                 <div className="text-[13px] text-secondary mb-6 leading-relaxed">
-                  你可以发布一个去大厅的提供帮带，或者建立一个不公开的私人行李箱来管理你想帮带的物品。
+                  你可以发布一个去大厅的提供帮带，或者建立一个专用的行李箱来管理你想帮带的物品。
                 </div>
                 <button onClick={() => navigate('/publish')} className="btn-primary w-full mb-3">发布提供帮带 (公开)</button>
-                <button onClick={() => setShowCreateModal(true)} className="btn-outline w-full bg-white">🆕 创建私人行李箱</button>
+                <button onClick={() => setShowCreateModal(true)} className="btn-outline w-full bg-white">🆕 创建行李箱</button>
               </div>
             ) : (
               <>
                 <button onClick={() => setShowCreateModal(true)} className="w-full flex items-center justify-center gap-2 py-3 rounded-lg border border-dashed border-brand/50 text-brand font-medium text-[14px] bg-brand-light/30 hover:bg-brand-light transition-colors">
-                  <Plus className="w-4 h-4" /> 新建额外的私人行李箱
+                  <Plus className="w-4 h-4" /> 新建额外的行李箱
                 </button>
                 
                 {suitcases.map(suitcase => {
@@ -193,12 +189,12 @@ export default function DigitalLuggagePage() {
                       <div className="absolute top-5 right-5">
                         <button onClick={() => handleToggleActive(suitcase.id, suitcase.is_active)}
                           className={`text-[11px] font-semibold px-2.5 py-1 rounded-full shadow-sm border ${suitcase.is_active ? 'bg-green-50 text-green-700 border-green-200' : 'bg-surface text-secondary border-border'}`}>
-                          {suitcase.is_active ? '大厅公开中' : '私人隐藏'}
+                          {suitcase.is_active ? '大厅公开中' : '未公开'}
                         </button>
                       </div>
 
-                      <div className="text-[20px] font-bold text-ink mb-1">{suitcase.departure} → {suitcase.arrival}</div>
-                      <div className="text-[13px] text-muted mb-5">发布时间：{new Date(suitcase.created_at).toLocaleDateString()}</div>
+                      <div className="text-[20px] font-bold text-ink mb-1">{suitcase.item_name || `${suitcase.departure} → ${suitcase.arrival}`}</div>
+                      <div className="text-[13px] text-muted mb-5">创建时间：{new Date(suitcase.created_at).toLocaleDateString()}</div>
                       
                       <CapacityBar used={used} total={suitcase.weight} />
 
@@ -246,7 +242,7 @@ export default function DigitalLuggagePage() {
               return (
                 <div key={h.id} className="bg-white rounded-lg p-5 shadow-card">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="font-semibold text-[15px] text-ink">{h.departure} → {h.arrival}</span>
+                    <span className="font-semibold text-[15px] text-ink">{h.item_name || `${h.departure} → ${h.arrival}`}</span>
                     <span className="text-[11px] text-muted bg-surface px-2 py-0.5 rounded-[6px]">已过期</span>
                   </div>
                   <div className="text-[13px] text-secondary">{new Date(h.created_at).toLocaleDateString()}</div>

@@ -29,8 +29,7 @@ export default function PostDetailRequestPage() {
   
   // Inline suitcase creation state
   const [isCreatingSuitcase, setIsCreatingSuitcase] = useState(false)
-  const [newDeparture, setNewDeparture] = useState('')
-  const [newArrival, setNewArrival] = useState('')
+  const [newSuitcaseName, setNewSuitcaseName] = useState('我的行李箱')
   const [newWeight, setNewWeight] = useState(15)
 
   useEffect(() => {
@@ -50,14 +49,21 @@ export default function PostDetailRequestPage() {
           .eq('type', 'provide')
 
         if (suitcaseError) throw suitcaseError
-        setSuitcases(suitcaseData || [])
-        if (suitcaseData && suitcaseData.length > 0) {
-          setSelectedSuitcaseId(suitcaseData[0].id)
+        
+        // Filter out expired suitcases (date in the past), but keep generic ones (like 2099-12-31)
+        const now = new Date()
+        now.setHours(0, 0, 0, 0)
+        const activeSuitcases = (suitcaseData || []).filter(s => {
+          if (!s.date) return true
+          return new Date(s.date) >= now
+        })
+
+        setSuitcases(activeSuitcases)
+        if (activeSuitcases.length > 0) {
+          setSelectedSuitcaseId(activeSuitcases[0].id)
         } else {
           setIsCreatingSuitcase(true) // Force creation if no suitcases
         }
-        setNewDeparture(postData.departure)
-        setNewArrival(postData.arrival)
       } catch (err) {
         showToast('加载失败', 'error')
       } finally {
@@ -82,11 +88,12 @@ export default function PostDetailRequestPage() {
         const newSuitcase = await createPost({
           user_id: CURRENT_USER_ID,
           type: 'provide',
-          departure: newDeparture,
-          arrival: newArrival,
+          item_name: newSuitcaseName,
+          departure: '',
+          arrival: '',
           weight: newWeight,
-          is_active: false, // Private by default
-          date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+          is_active: false,
+          date: '2099-12-31'
         })
         finalSuitcaseId = newSuitcase.id
       }
@@ -215,29 +222,26 @@ export default function PostDetailRequestPage() {
 
             {isCreatingSuitcase ? (
               <div className="bg-surface p-3 rounded-lg space-y-3 border border-border">
-                <div className="text-[12px] text-secondary mb-2">将为你创建一个<span className="font-semibold text-brand">私人行李箱</span>专门管理此单：</div>
+                <div className="text-[12px] text-secondary mb-2">将为你创建一个<span className="font-semibold text-brand">行李箱</span>专门管理此单：</div>
                 <div className="flex gap-2">
-                  <div className="flex-1">
-                    <label className="block text-[11px] text-muted mb-1">出发地</label>
-                    <input className="input w-full text-[13px] py-1.5" value={newDeparture} onChange={e => setNewDeparture(e.target.value)} />
+                  <div className="flex-[2]">
+                    <label className="block text-[11px] text-muted mb-1">行李箱名称</label>
+                    <input className="input w-full text-[13px] py-1.5" value={newSuitcaseName} onChange={e => setNewSuitcaseName(e.target.value)} />
                   </div>
                   <div className="flex-1">
-                    <label className="block text-[11px] text-muted mb-1">目的地</label>
-                    <input className="input w-full text-[13px] py-1.5" value={newArrival} onChange={e => setNewArrival(e.target.value)} />
+                    <label className="block text-[11px] text-muted mb-1">总容量 (kg)</label>
+                    <input type="number" className="input w-full text-[13px] py-1.5" value={newWeight} onChange={e => setNewWeight(Number(e.target.value))} />
                   </div>
-                </div>
-                <div>
-                  <label className="block text-[11px] text-muted mb-1">总容量 (kg)</label>
-                  <input type="number" className="input w-full text-[13px] py-1.5" value={newWeight} onChange={e => setNewWeight(Number(e.target.value))} />
                 </div>
               </div>
             ) : (
               <select className="input w-full" value={selectedSuitcaseId} onChange={e => setSelectedSuitcaseId(e.target.value)}>
                 {suitcases.map(s => {
                   const used = s.trades?.filter(t => t.status === 'confirmed' || t.status === 'pending').reduce((sum, t) => sum + t.item_weight, 0) || 0
+                  const displayName = s.item_name || `${s.departure} → ${s.arrival}`
                   return (
                     <option key={s.id} value={s.id}>
-                      {s.departure} → {s.arrival} (剩余 {s.weight - used}kg)
+                      {displayName} (剩余 {s.weight - used}kg)
                     </option>
                   )
                 })}
