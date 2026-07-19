@@ -223,7 +223,9 @@ export default function ChatDetailProposalPage() {
           m.type === 'time' ? (
             <div key={m.id} className="text-center text-[12px] text-muted py-2">{m.text}</div>
           ) : m.type === 'system' ? (
-            <div key={m.id} className="text-center text-[12px] text-muted bg-surface border border-border mx-8 py-2 px-4 rounded-full my-2">{m.text}</div>
+            <div key={m.id} className="text-center text-[12px] text-muted bg-surface border border-border mx-8 py-2 px-4 rounded-full my-2">
+              {m.sender_id === CURRENT_USER_ID ? m.text : m.text.replace('你已', '对方已').replace('对方行李箱', '你的行李箱')}
+            </div>
           ) : (
             <div key={m.id} className={`flex ${m.sender_id === CURRENT_USER_ID ? 'justify-end' : 'justify-start'} px-4 mb-3`}>
               <div className={`max-w-[75%] px-4 py-2.5 text-[14px] leading-relaxed ${
