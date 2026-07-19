@@ -66,9 +66,8 @@ export default function PostDetailPage() {
       const conv = await getOrCreateConversation(post.id, CURRENT_USER_ID, post.user_id)
       
       // 3. Send initial message
-      if (note) {
-        await sendMessage(conv.id, CURRENT_USER_ID, note, 'text')
-      }
+      const sysMsg = `🔔 发起了帮带申请：[${itemName}] (${itemWeight}kg)。留言：${note || '无'}`
+      await sendMessage(conv.id, CURRENT_USER_ID, sysMsg, 'system')
       
       showToast('申请已发送，等待对方确认', 'success')
       setModalOpen(false)
