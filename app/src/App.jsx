@@ -18,10 +18,35 @@ import ProfilePage from './pages/ProfilePage'
 import RequestOrderDetailPage from './pages/RequestOrderDetailPage'
 import ReviewPage from './pages/ReviewPage'
 
+import { useEffect } from 'react'
+import { supabase } from './supabase/client'
+
 // Initialize demo trust data
 ensureDemoTrustData()
 
 export default function App() {
+  useEffect(() => {
+    async function checkConnection() {
+      const url = import.meta.env.VITE_SUPABASE_URL
+      const key = import.meta.env.VITE_SUPABASE_ANON_KEY
+      if (!url || !key) {
+        console.warn("⚠️ Supabase: 环境变量 VITE_SUPABASE_URL 或 VITE_SUPABASE_ANON_KEY 未配置，请创建并填写 app/.env 文件。")
+        return
+      }
+      try {
+        const { data, error } = await supabase.from('users').select('id').limit(1)
+        if (error) {
+          console.error("❌ Supabase 连接失败，请检查数据库是否已成功运行 SQL 脚本！错误信息:", error.message)
+        } else {
+          console.log("⚡ Supabase 连接成功！已读取到 users 表。数据连接正常。")
+        }
+      } catch (err) {
+        console.error("❌ Supabase 网络连接异常，请检查本地网络和代理配置：", err)
+      }
+    }
+    checkConnection()
+  }, [])
+
   return (
     <ToastProvider>
       <BrowserRouter>
