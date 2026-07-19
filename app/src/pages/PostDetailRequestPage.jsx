@@ -6,7 +6,7 @@ import Avatar from '../components/ui/Avatar'
 import Modal from '../components/layout/Modal'
 import { useToast } from '../contexts/ToastContext'
 import { supabase } from '../supabase/client'
-import { getPostById } from '../services/posts'
+import { getPostById, createPost } from '../services/posts'
 import { createTrade } from '../services/orders'
 import { getOrCreateConversation, sendMessage } from '../services/messages'
 
@@ -26,6 +26,12 @@ export default function PostDetailRequestPage() {
   const [selectedSuitcaseId, setSelectedSuitcaseId] = useState('')
   const [note, setNote] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  
+  // Inline suitcase creation state
+  const [isCreatingSuitcase, setIsCreatingSuitcase] = useState(false)
+  const [newDeparture, setNewDeparture] = useState('')
+  const [newArrival, setNewArrival] = useState('')
+  const [newWeight, setNewWeight] = useState(15)
 
   useEffect(() => {
     async function loadData() {
@@ -47,7 +53,11 @@ export default function PostDetailRequestPage() {
         setSuitcases(suitcaseData || [])
         if (suitcaseData && suitcaseData.length > 0) {
           setSelectedSuitcaseId(suitcaseData[0].id)
+        } else {
+          setIsCreatingSuitcase(true) // Force creation if no suitcases
         }
+        setNewDeparture(postData.departure)
+        setNewArrival(postData.arrival)
       } catch (err) {
         showToast('加载失败', 'error')
       } finally {
@@ -58,18 +68,33 @@ export default function PostDetailRequestPage() {
   }, [id])
 
   async function sendProposal() {
-    if (!selectedSuitcaseId) {
+    if (!isCreatingSuitcase && !selectedSuitcaseId) {
       showToast('请选择要放入的行李箱', 'error')
       return
     }
 
     setSubmitting(true)
     try {
+      let finalSuitcaseId = selectedSuitcaseId
+
+      if (isCreatingSuitcase) {
+        // Create the private suitcase first
+        const newSuitcase = await createPost({
+          user_id: CURRENT_USER_ID,
+          type: 'provide',
+          departure: newDeparture,
+          arrival: newArrival,
+          weight: newWeight,
+          is_active: false, // Private by default
+          date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        })
+        finalSuitcaseId = newSuitcase.id
+      }
+
       // Create a pending trade
-      // For a seek post, the post_id is the seek post, and carrier_post_id is the selected suitcase.
       const trade = await createTrade({
         post_id: post.id,
-        carrier_post_id: selectedSuitcaseId,
+        carrier_post_id: finalSuitcaseId,
         carrier_id: CURRENT_USER_ID,
         shipper_id: post.user_id,
         item_name: post.item_name,
@@ -179,15 +204,37 @@ export default function PostDetailRequestPage() {
           </div>
           
           <div>
-            <label className="block text-[14px] font-semibold text-ink mb-2">计划放入的行李箱</label>
-            {suitcases.length === 0 ? (
-              <div className="text-[13px] text-red-500 bg-red-50 p-3 rounded-lg border border-red-200">
-                ⚠️ 你目前没有任何行李箱。请先前往“我的行李箱”发布或创建一个。
+            <div className="flex justify-between items-center mb-2">
+              <label className="text-[14px] font-semibold text-ink">计划放入的行李箱</label>
+              {suitcases.length > 0 && (
+                <button onClick={() => setIsCreatingSuitcase(!isCreatingSuitcase)} className="text-[12px] text-brand font-medium">
+                  {isCreatingSuitcase ? '使用现有行李箱' : '➕ 新建行李箱'}
+                </button>
+              )}
+            </div>
+
+            {isCreatingSuitcase ? (
+              <div className="bg-surface p-3 rounded-lg space-y-3 border border-border">
+                <div className="text-[12px] text-secondary mb-2">将为你创建一个<span className="font-semibold text-brand">私人行李箱</span>专门管理此单：</div>
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <label className="block text-[11px] text-muted mb-1">出发地</label>
+                    <input className="input w-full text-[13px] py-1.5" value={newDeparture} onChange={e => setNewDeparture(e.target.value)} />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-[11px] text-muted mb-1">目的地</label>
+                    <input className="input w-full text-[13px] py-1.5" value={newArrival} onChange={e => setNewArrival(e.target.value)} />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-[11px] text-muted mb-1">总容量 (kg)</label>
+                  <input type="number" className="input w-full text-[13px] py-1.5" value={newWeight} onChange={e => setNewWeight(Number(e.target.value))} />
+                </div>
               </div>
             ) : (
               <select className="input w-full" value={selectedSuitcaseId} onChange={e => setSelectedSuitcaseId(e.target.value)}>
                 {suitcases.map(s => {
-                  const used = s.trades.filter(t => t.status === 'confirmed' || t.status === 'pending').reduce((sum, t) => sum + t.item_weight, 0)
+                  const used = s.trades?.filter(t => t.status === 'confirmed' || t.status === 'pending').reduce((sum, t) => sum + t.item_weight, 0) || 0
                   return (
                     <option key={s.id} value={s.id}>
                       {s.departure} → {s.arrival} (剩余 {s.weight - used}kg)
