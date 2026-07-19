@@ -13,7 +13,7 @@ A visual viewport showing a User's active Provide Post, its remaining capacity, 
 _Avoid_: Luggage, Bag, Suitcase Table
 
 **Trade**:
-An agreement between a Carrier and a Shipper where the Carrier agrees to transport an Item for the Shipper. It goes through a lifecycle of pending, confirmed, and completed.
+An agreement between a Carrier and a Shipper where the Carrier agrees to transport an Item for the Shipper. It is marked completed only when both the Carrier (completed delivery) and Shipper (completed receipt) have confirmed.
 _Avoid_: Order, Transaction, Deal, Contract
 
 **Conversation**:
@@ -29,7 +29,7 @@ A social label indicating a positive trait of a User (e.g. "On Time", "Easy Comm
 _Avoid_: Rating, Star, Review, Badge
 
 **Vote**:
-The action of a User assigning a TrustTag to another User after a completed Trade.
+The action of a User assigning a TrustTag to another User after a completed Trade. A User can Vote immediately after confirming their own completion of the Trade.
 _Avoid_: Review Submission, Rating Vote
 
 **User**:
