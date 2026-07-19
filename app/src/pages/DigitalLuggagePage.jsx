@@ -4,8 +4,13 @@ import BottomTabBar from '../components/layout/BottomTabBar'
 import CapacityBar from '../components/ui/CapacityBar'
 import StatusTag from '../components/ui/StatusTag'
 import { useToast } from '../contexts/ToastContext'
-import { supabase } from '../supabase/client'
-import { createPost, togglePostActive, updatePost } from '../services/posts'
+import { 
+  getUserSuitcases, 
+  createSuitcase, 
+  updateSuitcase, 
+  toggleSuitcaseActive, 
+  markSuitcaseCompleted 
+} from '../services/suitcases'
 import { updateTradeStatus } from '../services/orders'
 import { sendMessage, getOrCreateConversation } from '../services/messages'
 import { X, Plus, ChevronDown } from 'lucide-react'
@@ -25,9 +30,8 @@ function CreateSuitcaseModal({ onClose, onSuccess }) {
   async function handleSubmit() {
     setLoading(true)
     try {
-      await createPost({
+      await createSuitcase({
         user_id: CURRENT_USER_ID,
-        type: 'provide',
         item_name: suitcaseName,
         departure,
         arrival,
@@ -96,7 +100,7 @@ function EditSuitcaseModal({ suitcase, onClose, onSuccess }) {
   async function handleSubmit() {
     setLoading(true)
     try {
-      await updatePost(suitcase.id, {
+      await updateSuitcase(suitcase.id, {
         item_name: suitcaseName,
         departure,
         arrival,
@@ -156,10 +160,9 @@ function SuitcaseCard({ suitcase, onEdit, onToggleActive, onDeleteItem, onComple
   const navigate = useNavigate()
   const [isExpanded, setIsExpanded] = useState(true)
   
-  const activeTrades = suitcase.trades.filter(t => t.status === 'confirmed' || t.status === 'pending' || t.status === 'completed')
-  const used = activeTrades.reduce((s, t) => s + t.item_weight, 0)
-  
-  const allCompleted = activeTrades.length > 0 && activeTrades.every(t => t.status === 'completed')
+  const activeTrades = suitcase.active_trades || []
+  const used = suitcase.used_capacity || 0
+  const allCompleted = suitcase.all_completed || false
 
   return (
     <div className="bg-white rounded-lg shadow-card p-5 relative">
@@ -246,32 +249,9 @@ export default function DigitalLuggagePage() {
 
   async function loadSuitcases() {
     try {
-      const { data, error } = await supabase
-        .from('posts')
-        .select(`
-          *,
-          trades:trades!trades_carrier_post_id_fkey(
-            *,
-            shipper:users!trades_shipper_id_fkey(*)
-          )
-        `)
-        .eq('user_id', CURRENT_USER_ID)
-        .eq('type', 'provide')
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-
-      const now = new Date()
-      const active = []
-      const past = []
-
-      for (const p of data) {
-        if (new Date(p.date) > now) active.push(p)
-        else past.push(p)
-      }
-
-      setSuitcases(active)
-      setHistory(past)
+      const { current, history } = await getUserSuitcases(CURRENT_USER_ID)
+      setSuitcases(current)
+      setHistory(history)
     } catch (err) {
       console.error('Error loading suitcases:', err)
       showToast('加载行李箱失败', 'error')
@@ -286,7 +266,7 @@ export default function DigitalLuggagePage() {
 
   async function handleToggleActive(postId, currentActive) {
     try {
-      await togglePostActive(postId, !currentActive)
+      await toggleSuitcaseActive(postId, !currentActive)
       showToast(!currentActive ? '已上架至大厅' : '已下架，转为私人', 'success')
       loadSuitcases()
     } catch (err) {
@@ -297,7 +277,7 @@ export default function DigitalLuggagePage() {
   async function handleCompleteSuitcase(suitcase) {
     if (!window.confirm(`确定要将“${suitcase.item_name || suitcase.departure + '→' + suitcase.arrival}”标记为已完成并移至历史记录吗？`)) return
     try {
-      await updatePost(suitcase.id, { date: '1970-01-01', is_active: false })
+      await markSuitcaseCompleted(suitcase.id)
       showToast('已移至历史记录', 'success')
       loadSuitcases()
     } catch (err) {
@@ -375,8 +355,8 @@ export default function DigitalLuggagePage() {
         ) : (
           <div className="px-5 space-y-3">
             {history.length > 0 ? history.map(h => {
-              const activeTrades = h.trades.filter(t => t.status === 'confirmed' || t.status === 'completed')
-              const used = activeTrades.reduce((s, t) => s + t.item_weight, 0)
+              const activeTrades = h.active_trades || []
+              const used = h.used_capacity || 0
               return (
                 <div key={h.id} className="bg-white rounded-lg p-5 shadow-card">
                   <div className="flex items-center justify-between mb-1">

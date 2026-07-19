@@ -5,8 +5,8 @@ import PageHeader from '../components/layout/PageHeader'
 import Avatar from '../components/ui/Avatar'
 import Modal from '../components/layout/Modal'
 import { useToast } from '../contexts/ToastContext'
-import { supabase } from '../supabase/client'
-import { getPostById, createPost } from '../services/posts'
+import { getPostById } from '../services/posts'
+import { getUserSuitcases, createSuitcase } from '../services/suitcases'
 import { createTrade } from '../services/orders'
 import { getOrCreateConversation, sendMessage } from '../services/messages'
 
@@ -45,28 +45,11 @@ export default function PostDetailRequestPage() {
         setNewDate(postData.date)
 
         // Fetch current user's suitcases (both public and private)
-        const { data: suitcaseData, error: suitcaseError } = await supabase
-          .from('posts')
-          .select(`
-            *,
-            trades:trades!trades_carrier_post_id_fkey(*)
-          `)
-          .eq('user_id', CURRENT_USER_ID)
-          .eq('type', 'provide')
+        const { current } = await getUserSuitcases(CURRENT_USER_ID)
 
-        if (suitcaseError) throw suitcaseError
-        
-        // Filter out expired suitcases (date in the past), but keep generic ones (like 2099-12-31)
-        const now = new Date()
-        now.setHours(0, 0, 0, 0)
-        const activeSuitcases = (suitcaseData || []).filter(s => {
-          if (!s.date) return true
-          return new Date(s.date) >= now
-        })
-
-        setSuitcases(activeSuitcases)
-        if (activeSuitcases.length > 0) {
-          setSelectedSuitcaseId(activeSuitcases[0].id)
+        setSuitcases(current)
+        if (current.length > 0) {
+          setSelectedSuitcaseId(current[0].id)
         } else {
           setIsCreatingSuitcase(true) // Force creation if no suitcases
         }
@@ -91,9 +74,8 @@ export default function PostDetailRequestPage() {
 
       if (isCreatingSuitcase) {
         // Create the private suitcase first
-        const newSuitcase = await createPost({
+        const newSuitcase = await createSuitcase({
           user_id: CURRENT_USER_ID,
-          type: 'provide',
           item_name: newSuitcaseName,
           departure: newDeparture,
           arrival: newArrival,
@@ -253,7 +235,7 @@ export default function PostDetailRequestPage() {
             ) : (
               <select className="input w-full" value={selectedSuitcaseId} onChange={e => setSelectedSuitcaseId(e.target.value)}>
                 {suitcases.map(s => {
-                  const used = s.trades?.filter(t => t.status === 'confirmed' || t.status === 'pending').reduce((sum, t) => sum + t.item_weight, 0) || 0
+                  const used = s.used_capacity || 0
                   const displayName = s.item_name || `${s.departure} → ${s.arrival}`
                   return (
                     <option key={s.id} value={s.id}>
