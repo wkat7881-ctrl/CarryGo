@@ -30,6 +30,9 @@ export default function PostDetailRequestPage() {
   // Inline suitcase creation state
   const [isCreatingSuitcase, setIsCreatingSuitcase] = useState(false)
   const [newSuitcaseName, setNewSuitcaseName] = useState('我的行李箱')
+  const [newDeparture, setNewDeparture] = useState('')
+  const [newArrival, setNewArrival] = useState('')
+  const [newDate, setNewDate] = useState('')
   const [newWeight, setNewWeight] = useState(15)
 
   useEffect(() => {
@@ -37,6 +40,9 @@ export default function PostDetailRequestPage() {
       try {
         const postData = await getPostById(id)
         setPost(postData)
+        setNewDeparture(postData.departure)
+        setNewArrival(postData.arrival)
+        setNewDate(postData.date)
 
         // Fetch current user's suitcases (both public and private)
         const { data: suitcaseData, error: suitcaseError } = await supabase
@@ -89,11 +95,11 @@ export default function PostDetailRequestPage() {
           user_id: CURRENT_USER_ID,
           type: 'provide',
           item_name: newSuitcaseName,
-          departure: '',
-          arrival: '',
+          departure: newDeparture,
+          arrival: newArrival,
           weight: newWeight,
           is_active: false,
-          date: '2099-12-31'
+          date: newDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
         })
         finalSuitcaseId = newSuitcase.id
       }
@@ -229,8 +235,18 @@ export default function PostDetailRequestPage() {
                     <input className="input w-full text-[13px] py-1.5" value={newSuitcaseName} onChange={e => setNewSuitcaseName(e.target.value)} />
                   </div>
                   <div className="flex-1">
-                    <label className="block text-[11px] text-muted mb-1">总容量 (kg)</label>
+                    <label className="block text-[11px] text-muted mb-1">容量 (kg)</label>
                     <input type="number" className="input w-full text-[13px] py-1.5" value={newWeight} onChange={e => setNewWeight(Number(e.target.value))} />
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <label className="block text-[11px] text-muted mb-1">出发地</label>
+                    <input className="input w-full text-[13px] py-1.5" value={newDeparture} onChange={e => setNewDeparture(e.target.value)} />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-[11px] text-muted mb-1">目的地</label>
+                    <input className="input w-full text-[13px] py-1.5" value={newArrival} onChange={e => setNewArrival(e.target.value)} />
                   </div>
                 </div>
               </div>

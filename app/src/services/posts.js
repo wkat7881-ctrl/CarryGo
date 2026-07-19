@@ -91,3 +91,21 @@ export async function togglePostActive(postId, isActive) {
 
   return data[0]
 }
+
+/**
+ * Update an existing Post.
+ */
+export async function updatePost(postId, postData) {
+  const { data, error } = await supabase
+    .from('posts')
+    .update(postData)
+    .eq('id', postId)
+    .select()
+
+  if (error) {
+    console.error('Error updating post:', error.message)
+    throw error
+  }
+
+  return data[0]
+}

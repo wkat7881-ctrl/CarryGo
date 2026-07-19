@@ -5,7 +5,7 @@ import CapacityBar from '../components/ui/CapacityBar'
 import StatusTag from '../components/ui/StatusTag'
 import { useToast } from '../contexts/ToastContext'
 import { supabase } from '../supabase/client'
-import { createPost, togglePostActive } from '../services/posts'
+import { createPost, togglePostActive, updatePost } from '../services/posts'
 import { updateTradeStatus } from '../services/orders'
 import { sendMessage, getOrCreateConversation } from '../services/messages'
 import { X, Plus, ChevronDown } from 'lucide-react'
@@ -16,6 +16,9 @@ const CURRENT_USER_ID = getCurrentUserId()
 // --- Create Suitcase Modal ---
 function CreateSuitcaseModal({ onClose, onSuccess }) {
   const [suitcaseName, setSuitcaseName] = useState('我的行李箱')
+  const [departure, setDeparture] = useState('巴黎')
+  const [arrival, setArrival] = useState('上海')
+  const [date, setDate] = useState(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
   const [weight, setWeight] = useState(15)
   const [loading, setLoading] = useState(false)
 
@@ -25,12 +28,12 @@ function CreateSuitcaseModal({ onClose, onSuccess }) {
       await createPost({
         user_id: CURRENT_USER_ID,
         type: 'provide',
-        item_name: suitcaseName, // Store suitcase name here
-        departure: '',
-        arrival: '',
+        item_name: suitcaseName,
+        departure,
+        arrival,
         weight,
         is_active: false,
-        date: '2099-12-31' // Never expires for generic suitcases
+        date
       })
       onSuccess()
     } catch (err) {
@@ -42,7 +45,7 @@ function CreateSuitcaseModal({ onClose, onSuccess }) {
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-5 animate-fade-in">
-      <div className="bg-white rounded-xl w-full max-w-sm overflow-hidden animate-slide-up">
+      <div className="bg-white rounded-xl w-full max-w-sm overflow-hidden animate-slide-up max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center p-4 border-b border-border">
           <h3 className="font-bold text-[16px] text-ink">🆕 新建行李箱</h3>
           <button onClick={onClose} className="p-1 rounded-full hover:bg-surface"><X className="w-5 h-5 text-secondary" /></button>
@@ -52,12 +55,96 @@ function CreateSuitcaseModal({ onClose, onSuccess }) {
             <label className="block text-[13px] font-semibold text-ink mb-1">行李箱名称</label>
             <input className="input w-full" value={suitcaseName} onChange={e => setSuitcaseName(e.target.value)} placeholder="例如：7月回国行李箱" />
           </div>
-          <div>
-            <label className="block text-[13px] font-semibold text-ink mb-1">总容量 (kg)</label>
-            <input type="number" className="input w-full" value={weight} onChange={e => setWeight(Number(e.target.value))} />
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <label className="block text-[13px] font-semibold text-ink mb-1">出发地</label>
+              <input className="input w-full" value={departure} onChange={e => setDeparture(e.target.value)} />
+            </div>
+            <div className="flex-1">
+              <label className="block text-[13px] font-semibold text-ink mb-1">目的地</label>
+              <input className="input w-full" value={arrival} onChange={e => setArrival(e.target.value)} />
+            </div>
           </div>
-          <button onClick={handleSubmit} disabled={loading} className="w-full btn-primary disabled:opacity-50">
-            {loading ? '创建中...' : '确认创建'}
+          <div className="flex gap-2">
+            <div className="flex-[2]">
+              <label className="block text-[13px] font-semibold text-ink mb-1">日期</label>
+              <input type="date" className="input w-full" value={date} onChange={e => setDate(e.target.value)} />
+            </div>
+            <div className="flex-1">
+              <label className="block text-[13px] font-semibold text-ink mb-1">容量 (kg)</label>
+              <input type="number" className="input w-full" value={weight} onChange={e => setWeight(Number(e.target.value))} />
+            </div>
+          </div>
+          <button onClick={handleSubmit} disabled={loading} className="w-full btn-primary disabled:opacity-50 mt-2">
+            {loading ? '保存中...' : '确认创建'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// --- Edit Suitcase Modal ---
+function EditSuitcaseModal({ suitcase, onClose, onSuccess }) {
+  const [suitcaseName, setSuitcaseName] = useState(suitcase.item_name || '')
+  const [departure, setDeparture] = useState(suitcase.departure || '')
+  const [arrival, setArrival] = useState(suitcase.arrival || '')
+  const [date, setDate] = useState(suitcase.date || '')
+  const [weight, setWeight] = useState(suitcase.weight || 15)
+  const [loading, setLoading] = useState(false)
+
+  async function handleSubmit() {
+    setLoading(true)
+    try {
+      await updatePost(suitcase.id, {
+        item_name: suitcaseName,
+        departure,
+        arrival,
+        weight,
+        date
+      })
+      onSuccess()
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-5 animate-fade-in">
+      <div className="bg-white rounded-xl w-full max-w-sm overflow-hidden animate-slide-up max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center p-4 border-b border-border">
+          <h3 className="font-bold text-[16px] text-ink">✏️ 编辑行李箱</h3>
+          <button onClick={onClose} className="p-1 rounded-full hover:bg-surface"><X className="w-5 h-5 text-secondary" /></button>
+        </div>
+        <div className="p-5 space-y-4">
+          <div>
+            <label className="block text-[13px] font-semibold text-ink mb-1">行李箱名称</label>
+            <input className="input w-full" value={suitcaseName} onChange={e => setSuitcaseName(e.target.value)} />
+          </div>
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <label className="block text-[13px] font-semibold text-ink mb-1">出发地</label>
+              <input className="input w-full" value={departure} onChange={e => setDeparture(e.target.value)} />
+            </div>
+            <div className="flex-1">
+              <label className="block text-[13px] font-semibold text-ink mb-1">目的地</label>
+              <input className="input w-full" value={arrival} onChange={e => setArrival(e.target.value)} />
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <div className="flex-[2]">
+              <label className="block text-[13px] font-semibold text-ink mb-1">日期</label>
+              <input type="date" className="input w-full" value={date} onChange={e => setDate(e.target.value)} />
+            </div>
+            <div className="flex-1">
+              <label className="block text-[13px] font-semibold text-ink mb-1">容量 (kg)</label>
+              <input type="number" className="input w-full" value={weight} onChange={e => setWeight(Number(e.target.value))} />
+            </div>
+          </div>
+          <button onClick={handleSubmit} disabled={loading} className="w-full btn-primary disabled:opacity-50 mt-2">
+            {loading ? '保存中...' : '保存修改'}
           </button>
         </div>
       </div>
@@ -75,6 +162,7 @@ export default function DigitalLuggagePage() {
   const [loading, setLoading] = useState(true)
   
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [editingSuitcase, setEditingSuitcase] = useState(null)
 
   async function loadSuitcases() {
     try {
@@ -186,7 +274,11 @@ export default function DigitalLuggagePage() {
                   
                   return (
                     <div key={suitcase.id} className="bg-white rounded-lg shadow-card p-5 relative">
-                      <div className="absolute top-5 right-5">
+                      <div className="absolute top-5 right-5 flex items-center gap-2">
+                        <button onClick={() => setEditingSuitcase(suitcase)}
+                          className="text-[11px] font-semibold px-2.5 py-1 rounded-full shadow-sm border bg-surface text-secondary border-border hover:bg-border transition-colors">
+                          编辑
+                        </button>
                         <button onClick={() => handleToggleActive(suitcase.id, suitcase.is_active)}
                           className={`text-[11px] font-semibold px-2.5 py-1 rounded-full shadow-sm border ${suitcase.is_active ? 'bg-green-50 text-green-700 border-green-200' : 'bg-surface text-secondary border-border'}`}>
                           {suitcase.is_active ? '大厅公开中' : '未公开'}
@@ -194,7 +286,10 @@ export default function DigitalLuggagePage() {
                       </div>
 
                       <div className="text-[20px] font-bold text-ink mb-1">{suitcase.item_name || `${suitcase.departure} → ${suitcase.arrival}`}</div>
-                      <div className="text-[13px] text-muted mb-5">创建时间：{new Date(suitcase.created_at).toLocaleDateString()}</div>
+                      <div className="flex gap-2 items-center text-[13px] text-muted mb-5">
+                        <span className="font-medium text-ink bg-surface px-2 py-0.5 rounded-[4px]">{suitcase.departure || '-'} → {suitcase.arrival || '-'}</span>
+                        <span>{new Date(suitcase.date).toLocaleDateString()}</span>
+                      </div>
                       
                       <CapacityBar used={used} total={suitcase.weight} />
 
@@ -269,7 +364,19 @@ export default function DigitalLuggagePage() {
           onClose={() => setShowCreateModal(false)}
           onSuccess={() => {
             setShowCreateModal(false)
-            showToast('私人行李箱创建成功！', 'success')
+            showToast('行李箱创建成功！', 'success')
+            loadSuitcases()
+          }}
+        />
+      )}
+
+      {editingSuitcase && (
+        <EditSuitcaseModal 
+          suitcase={editingSuitcase}
+          onClose={() => setEditingSuitcase(null)}
+          onSuccess={() => {
+            setEditingSuitcase(null)
+            showToast('已保存修改', 'success')
             loadSuitcases()
           }}
         />
