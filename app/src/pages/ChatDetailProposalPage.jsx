@@ -7,6 +7,7 @@ import { ChevronLeft, Send } from 'lucide-react'
 import { supabase } from '../supabase/client'
 import { sendMessage } from '../services/messages'
 import { updateTradeStatus } from '../services/orders'
+import { togglePostActive } from '../services/posts'
 import { getCurrentUserId } from '../utils/auth'
 
 const CURRENT_USER_ID = getCurrentUserId()
@@ -163,7 +164,14 @@ export default function ChatDetailProposalPage() {
     try {
       await updateTradeStatus(latestTrade.id, 'confirmed')
       await sendMessage(conversation.id, CURRENT_USER_ID, '✅ 你已同意帮带，物品已放入对方行李箱。', 'system')
-      showToast('已同意，物品已加入对方行李箱', 'success')
+      
+      try {
+        await togglePostActive(latestTrade.post_id, false)
+      } catch (e) {
+        console.error('Failed to auto-hide post:', e)
+      }
+
+      showToast('已同意，物品已加入对方行李箱。大厅帖子已自动隐藏。', 'success')
       loadConversationAndMessages()
     } catch (err) {
       console.error('Failed to accept trade:', err)
