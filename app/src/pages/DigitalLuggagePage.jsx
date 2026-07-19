@@ -185,7 +185,7 @@ export default function DigitalLuggagePage() {
                 </button>
                 
                 {suitcases.map(suitcase => {
-                  const activeTrades = suitcase.trades.filter(t => t.status === 'confirmed' || t.status === 'pending')
+                  const activeTrades = suitcase.trades.filter(t => t.status === 'confirmed' || t.status === 'pending' || t.status === 'completed')
                   const used = activeTrades.reduce((s, t) => s + t.item_weight, 0)
                   
                   return (
