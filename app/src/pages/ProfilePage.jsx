@@ -1,10 +1,14 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import BottomTabBar from '../components/layout/BottomTabBar'
-import Avatar from '../components/ui/Avatar'
 import TrustBadge from '../components/ui/TrustBadge'
 import { getVisibleTrustBadges, ensureDemoTrustData } from '../utils/trustBadges'
 import { ChevronRight } from 'lucide-react'
+import { supabase } from '../supabase/client'
+import { getCurrentUserId, USERS } from '../utils/auth'
+
+const CURRENT_USER_ID = getCurrentUserId()
+const currentUser = USERS.find(u => u.id === CURRENT_USER_ID) || USERS[0]
 
 const MENU_ITEMS = [
   { icon: '📦', label: '我的发布', sub: '查看你发布的所有帖子' },
@@ -14,10 +18,45 @@ const MENU_ITEMS = [
 
 export default function ProfilePage() {
   const navigate = useNavigate()
+  
+  const [demands, setDemands] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  useEffect(() => { ensureDemoTrustData() }, [])
+  async function loadDemands() {
+    try {
+      const { data, error } = await supabase
+        .from('posts')
+        .select(`
+          *,
+          trades:trades!trades_post_id_fkey(
+            *,
+            carrier:users!trades_carrier_id_fkey(*)
+          )
+        `)
+        .eq('user_id', CURRENT_USER_ID)
+        .eq('type', 'seek')
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setDemands(data || [])
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { 
+    ensureDemoTrustData()
+    loadDemands()
+  }, [])
 
   const trustBadges = getVisibleTrustBadges('zhangming')
+
+  // Derive simple avatar URL
+  const avatarUrl = currentUser.id === '11111111-1111-1111-1111-111111111111' 
+    ? 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop'
+    : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop'
 
   return (
     <div className="flex flex-col h-full bg-surface">
@@ -27,11 +66,11 @@ export default function ProfilePage() {
         <div className="px-5 mb-6">
           <div className="flex items-center gap-4 mb-5">
             <img
-              src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop"
-              alt="张明" className="w-[80px] h-[80px] rounded-full object-cover"
+              src={avatarUrl}
+              alt={currentUser.name} className="w-[80px] h-[80px] rounded-full object-cover"
             />
             <div>
-              <div className="text-[22px] font-bold text-ink">张明</div>
+              <div className="text-[22px] font-bold text-ink">{currentUser.name.split(' ')[0]}</div>
               <div className="text-[14px] text-secondary mt-0.5">3 次帮带完成</div>
             </div>
           </div>
@@ -54,22 +93,37 @@ export default function ProfilePage() {
           )}
         </div>
 
-        {/* My Requests */}
+        {/* My Requests (Seek Posts) */}
         <div className="px-5 mb-6">
           <div className="section-label mb-3">我的需求单</div>
-          <div
-            className="bg-white rounded-lg p-5 shadow-card flex items-center justify-between cursor-pointer border-l-[3px] border-l-brand"
-            onClick={() => navigate('/orders/request/1')}
-          >
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[15px] font-semibold text-ink">爱他美奶粉（3罐）</span>
-                <span className="text-[11px] bg-brand-light text-brand px-2 py-0.5 rounded-[6px] font-semibold">🧳 Linda 已接单</span>
-              </div>
-              <div className="text-[13px] text-secondary">柏林 → 上海</div>
-            </div>
-            <ChevronRight className="w-5 h-5 text-muted flex-shrink-0" />
-          </div>
+          {loading ? (
+             <div className="text-muted text-[13px] py-4">加载中...</div>
+          ) : demands.length === 0 ? (
+             <div className="text-secondary text-[13px] py-4 bg-white rounded-lg text-center shadow-sm">暂无需求单</div>
+          ) : (
+             <div className="space-y-3">
+               {demands.map(demand => {
+                 const activeTrade = (demand.trades || []).find(t => t.status === 'confirmed' || t.status === 'pending' || t.status === 'completed')
+                 const carrierName = activeTrade?.carrier?.name
+                 const statusText = activeTrade ? (activeTrade.status === 'completed' ? '已完成' : activeTrade.status === 'pending' ? '等待确认' : '已接单') : '寻找中'
+                 
+                 return (
+                   <div key={demand.id}
+                     className="bg-white rounded-lg p-4 shadow-card flex flex-col cursor-pointer border-l-[3px] border-l-brand"
+                     onClick={() => navigate(activeTrade ? `/luggage/item/${activeTrade.id}` : `/post/${demand.id}`)}
+                   >
+                     <div className="flex justify-between items-center mb-1">
+                       <span className="text-[15px] font-semibold text-ink">{demand.item_name} ({demand.weight}kg)</span>
+                       <span className={`text-[11px] px-2 py-0.5 rounded-[6px] font-semibold ${activeTrade ? 'bg-brand-light text-brand' : 'bg-surface text-secondary'}`}>
+                         {carrierName ? `🧳 ${carrierName} ${statusText}` : '大厅公开中'}
+                       </span>
+                     </div>
+                     <div className="text-[13px] text-secondary">{demand.departure} → {demand.arrival}</div>
+                   </div>
+                 )
+               })}
+             </div>
+          )}
         </div>
 
         {/* Menu */}
