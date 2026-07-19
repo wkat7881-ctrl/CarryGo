@@ -11,8 +11,8 @@ import {
   toggleSuitcaseActive, 
   markSuitcaseCompleted 
 } from '../services/suitcases'
-import { updateTradeStatus } from '../services/orders'
-import { sendMessage, getOrCreateConversation } from '../services/messages'
+import { cancelTrade } from '../services/orders'
+import { getOrCreateConversation } from '../services/messages'
 import { X, Plus, ChevronDown } from 'lucide-react'
 
 import { getCurrentUserId } from '../utils/auth'
@@ -288,13 +288,7 @@ export default function DigitalLuggagePage() {
   async function handleDeleteItem(trade) {
     if (!window.confirm(`确定要移除 ${trade.item_name} 吗？这会拒绝或取消该笔帮带。`)) return
     try {
-      await updateTradeStatus(trade.id, 'cancelled')
-      
-      // Try to find conversation to send system message
-      const conv = await getOrCreateConversation(trade.post_id, trade.carrier_id, trade.shipper_id)
-      if (conv) {
-        await sendMessage(conv.id, CURRENT_USER_ID, '❌ 旅行者已将你的物品从行李箱移除/取消。', 'system')
-      }
+      await cancelTrade(trade.id, CURRENT_USER_ID)
       showToast('物品已移除', 'success')
       loadSuitcases()
     } catch (err) {

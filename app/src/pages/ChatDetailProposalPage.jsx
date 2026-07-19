@@ -6,8 +6,8 @@ import ContextCard from '../components/features/ContextCard'
 import { ChevronLeft, Send } from 'lucide-react'
 import { supabase } from '../supabase/client'
 import { sendMessage } from '../services/messages'
-import { updateTradeStatus } from '../services/orders'
-import { togglePostActive } from '../services/posts'
+import { acceptProposal, rejectProposal } from '../services/orders'
+
 import { getCurrentUserId } from '../utils/auth'
 
 const CURRENT_USER_ID = getCurrentUserId()
@@ -162,14 +162,7 @@ export default function ChatDetailProposalPage() {
   async function handleAccept() {
     if (!latestTrade) return
     try {
-      await updateTradeStatus(latestTrade.id, 'confirmed')
-      await sendMessage(conversation.id, CURRENT_USER_ID, '✅ 你已同意帮带，物品已放入对方行李箱。', 'system')
-      
-      try {
-        await togglePostActive(latestTrade.post_id, false)
-      } catch (e) {
-        console.error('Failed to auto-hide post:', e)
-      }
+      await acceptProposal(latestTrade.id, CURRENT_USER_ID)
 
       showToast('已同意，物品已加入对方行李箱。大厅帖子已自动隐藏。', 'success')
       loadConversationAndMessages()
@@ -181,8 +174,7 @@ export default function ChatDetailProposalPage() {
   async function handleReject() {
     if (!latestTrade) return
     try {
-      await updateTradeStatus(latestTrade.id, 'cancelled')
-      await sendMessage(conversation.id, CURRENT_USER_ID, '❌ 你已拒绝该帮带提议。', 'system')
+      await rejectProposal(latestTrade.id, CURRENT_USER_ID)
       showToast('已拒绝该提议', 'info')
       loadConversationAndMessages()
     } catch (err) {

@@ -5,7 +5,7 @@ import Avatar from '../components/ui/Avatar'
 import { Check } from 'lucide-react'
 import { useToast } from '../contexts/ToastContext'
 import { supabase } from '../supabase/client'
-import { updateTrade } from '../services/orders'
+import { confirmDelivery, confirmReceipt } from '../services/orders'
 
 import { getCurrentUserId } from '../utils/auth'
 const CURRENT_USER_ID = getCurrentUserId()
@@ -49,11 +49,11 @@ export default function ItemStatusPage() {
     setSubmitting(true)
     try {
       if (isCarrier) {
-        await updateTrade(trade.id, { carrier_completed: true })
+        await confirmDelivery(trade.id, CURRENT_USER_ID)
         showToast('已标记完成交付，前往评价', 'success')
         setTimeout(() => navigate(`/review?trade=${trade.id}&to=${trade.shipper_id}&from=${trade.carrier_id}`), 600)
       } else {
-        await updateTrade(trade.id, { shipper_completed: true, status: 'completed' })
+        await confirmReceipt(trade.id, CURRENT_USER_ID)
         showToast('已确认收货，前往评价', 'success')
         setTimeout(() => navigate(`/review?trade=${trade.id}&to=${trade.carrier_id}&from=${trade.shipper_id}`), 600)
       }
