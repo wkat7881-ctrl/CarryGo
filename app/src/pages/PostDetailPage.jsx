@@ -1,28 +1,92 @@
+import { useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import BottomTabBar from '../components/layout/BottomTabBar'
 import PageHeader from '../components/layout/PageHeader'
 import Avatar from '../components/ui/Avatar'
 import InfoRow from '../components/ui/InfoRow'
 import Modal from '../components/layout/Modal'
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
+import { useToast } from '../contexts/ToastContext'
+import { getPostById } from '../services/posts'
+import { createTrade } from '../services/orders'
+import { getOrCreateConversation, sendMessage } from '../services/messages'
 
-const POST = {
-  type: 'provide',
-  from: '慕尼黑', fromCountry: '德国',
-  to: '成都', toCountry: '中国',
-  date: '2024年8月18日',
-  weight: '总 10kg（剩余 8kg）',
-  price: '普通物品 ¥50/kg',
-  exchange: '面交或邮寄',
-  desc: '可帮带中德两国法律允许的航空携带物品。文件15欧/份，普通物品20欧/kg。不接受奢侈品、药品等特殊物品。',
-  timeAgo: '2小时前',
-  user: { name: 'Linda', count: 23, avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop', id: 'linda' },
-}
+const CURRENT_USER_ID = '11111111-1111-1111-1111-111111111111'
 
 export default function PostDetailPage() {
+  const { id } = useParams()
   const navigate = useNavigate()
+  const { showToast } = useToast()
+  
+  const [post, setPost] = useState(null)
+  const [loading, setLoading] = useState(true)
+  
   const [modalOpen, setModalOpen] = useState(false)
+  const [itemName, setItemName] = useState('')
+  const [itemWeight, setItemWeight] = useState('')
+  const [note, setNote] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+
+  useEffect(() => {
+    async function loadPost() {
+      try {
+        const data = await getPostById(id)
+        setPost(data)
+      } catch (err) {
+        showToast('加载详情失败', 'error')
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadPost()
+  }, [id])
+
+  async function submitApplication() {
+    if (!itemName || !itemWeight) {
+      showToast('请填写物品名称和重量', 'error')
+      return
+    }
+
+    setSubmitting(true)
+    try {
+      // 1. Create a pending trade
+      // For a provide post, the carrier_post_id IS the post_id itself.
+      const trade = await createTrade({
+        post_id: post.id,
+        carrier_post_id: post.id,
+        carrier_id: post.user_id,
+        shipper_id: CURRENT_USER_ID,
+        item_name: itemName,
+        item_weight: Number(itemWeight),
+        status: 'pending'
+      })
+
+      // 2. Find or create conversation
+      const conv = await getOrCreateConversation(post.id, CURRENT_USER_ID, post.user_id)
+      
+      // 3. Send initial message
+      if (note) {
+        await sendMessage(conv.id, CURRENT_USER_ID, note, 'text')
+      }
+      
+      showToast('申请已发送，等待对方确认', 'success')
+      setModalOpen(false)
+      navigate(`/chat/${conv.id}`)
+    } catch (err) {
+      showToast('提交失败', 'error')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  if (loading || !post) {
+    return <div className="flex-1 bg-surface flex items-center justify-center text-muted">加载中...</div>
+  }
+
+  // Calculate remaining weight
+  const activeTrades = post.trades.filter(t => t.status === 'confirmed' || t.status === 'pending')
+  const usedWeight = activeTrades.reduce((sum, t) => sum + t.item_weight, 0)
+  const remain = post.weight - usedWeight
 
   return (
     <div className="flex flex-col h-full bg-surface">
@@ -33,32 +97,29 @@ export default function PostDetailPage() {
         <div className="mx-5 mb-3 bg-white rounded-lg shadow-card p-5">
           <div className="flex justify-between items-start mb-6">
             <div className="px-2 py-0.5 rounded-[6px] text-[11px] font-semibold bg-brand-light text-brand">🛫 提供帮带</div>
-            <span className="text-[12px] text-muted">{POST.timeAgo}</span>
+            <span className="text-[12px] text-muted">{new Date(post.created_at).toLocaleDateString()}</span>
           </div>
 
-          {/* Route large display */}
           <div className="flex items-center justify-center gap-6 my-6">
             <div className="text-center">
-              <div className="text-[24px] font-bold text-ink">{POST.from}</div>
-              <div className="text-[12px] text-muted">{POST.fromCountry}</div>
+              <div className="text-[24px] font-bold text-ink">{post.departure}</div>
             </div>
             <span className="text-[24px] text-brand font-bold">→</span>
             <div className="text-center">
-              <div className="text-[24px] font-bold text-ink">{POST.to}</div>
-              <div className="text-[12px] text-muted">{POST.toCountry}</div>
+              <div className="text-[24px] font-bold text-ink">{post.arrival}</div>
             </div>
           </div>
 
-          <InfoRow label="出发日期" value={POST.date} />
-          <InfoRow label="可带重量" value={POST.weight} />
-          <InfoRow label="收费标准" value={POST.price} />
-          <InfoRow label="交易方式" value={POST.exchange} noBorder />
+          <InfoRow label="出发日期" value={post.date} />
+          <InfoRow label="可带重量" value={`总 ${post.weight}kg（剩余 ${remain}kg）`} />
+          <InfoRow label="收费标准" value={post.price_info || '无'} />
+          <InfoRow label="交易方式" value="面交或邮寄" noBorder />
         </div>
 
         {/* Description */}
         <div className="mx-5 mb-3 bg-white rounded-lg shadow-card p-5">
           <div className="font-semibold text-ink mb-2 text-[15px]">帮带说明</div>
-          <p className="text-[14px] text-secondary leading-relaxed">{POST.desc}</p>
+          <p className="text-[14px] text-secondary leading-relaxed">{post.price_info || '暂无说明'}</p>
         </div>
 
         {/* Disclaimer */}
@@ -70,55 +131,48 @@ export default function PostDetailPage() {
         </div>
 
         {/* User card */}
-        <div
-          className="mx-5 mb-3 bg-white rounded-lg shadow-card p-5 flex items-center gap-3 cursor-pointer"
-          onClick={() => navigate(`/profile/${POST.user.id}`)}
-        >
-          <Avatar src={POST.user.avatar} alt={POST.user.name} size="lg" />
+        <div className="mx-5 mb-3 bg-white rounded-lg shadow-card p-5 flex items-center gap-3 cursor-pointer">
+          <Avatar src={post.user.avatar_url} alt={post.user.name} size="lg" />
           <div className="flex-1">
-            <div className="font-semibold text-[16px] text-ink">{POST.user.name}</div>
-            <div className="text-[13px] text-muted mt-0.5">{POST.user.count}次帮带</div>
+            <div className="font-semibold text-[16px] text-ink">{post.user.name}</div>
+            <div className="text-[13px] text-muted mt-0.5">历史帮带记录</div>
           </div>
           <ChevronRight className="w-5 h-5 text-muted" />
         </div>
       </div>
 
       {/* Action Bar */}
-      <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-border px-5 py-4 flex gap-3 z-10 pb-8">
-        <button
-          className="flex-1 btn-outline"
-          onClick={() => navigate('/chat/alice-1')}
-        >
-          💬 联系TA
-        </button>
-        <button
-          className="flex-1 btn-primary"
-          onClick={() => setModalOpen(true)}
-        >
-          📦 申请帮带
-        </button>
-      </div>
+      {post.user_id !== CURRENT_USER_ID && (
+        <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-border px-5 py-4 flex gap-3 z-10 pb-8">
+          <button className="flex-1 btn-outline" onClick={async () => {
+            const conv = await getOrCreateConversation(post.id, CURRENT_USER_ID, post.user_id)
+            navigate(`/chat/${conv.id}`)
+          }}>
+            💬 联系TA
+          </button>
+          <button className="flex-1 btn-primary" onClick={() => setModalOpen(true)}>
+            📦 申请帮带
+          </button>
+        </div>
+      )}
 
       {/* Apply Modal */}
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title="申请帮带">
         <div className="space-y-4">
           <div>
             <label className="block text-[14px] font-semibold text-ink mb-2">物品名称</label>
-            <input className="input" placeholder="例如：奶粉、化妆品" />
+            <input className="input w-full" value={itemName} onChange={e => setItemName(e.target.value)} placeholder="例如：奶粉、化妆品" />
           </div>
           <div>
-            <label className="block text-[14px] font-semibold text-ink mb-2">物品重量</label>
-            <input type="number" className="input" placeholder="输入重量（kg）" />
+            <label className="block text-[14px] font-semibold text-ink mb-2">物品重量 (kg)</label>
+            <input type="number" className="input w-full" value={itemWeight} onChange={e => setItemWeight(e.target.value)} placeholder="输入重量" />
           </div>
           <div>
-            <label className="block text-[14px] font-semibold text-ink mb-2">备注说明</label>
-            <textarea className="input min-h-[80px] resize-none" placeholder="补充说明..." />
+            <label className="block text-[14px] font-semibold text-ink mb-2">留言说明</label>
+            <textarea className="input min-h-[80px] w-full resize-none" value={note} onChange={e => setNote(e.target.value)} placeholder="向旅行者打个招呼..." />
           </div>
-          <button
-            className="w-full btn-primary mt-2"
-            onClick={() => { setModalOpen(false); navigate('/apply-success') }}
-          >
-            提交申请
+          <button className="w-full btn-primary mt-2 disabled:opacity-50" onClick={submitApplication} disabled={submitting}>
+            {submitting ? '提交中...' : '提交申请'}
           </button>
         </div>
       </Modal>
