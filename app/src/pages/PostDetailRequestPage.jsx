@@ -254,7 +254,7 @@ export default function PostDetailRequestPage() {
             <textarea className="input w-full min-h-[80px] resize-none" value={note} onChange={e => setNote(e.target.value)} placeholder="例如：我这几天就飞，可以机场面交。" />
           </div>
           
-          <button className="w-full btn-primary mt-2 disabled:opacity-50" onClick={sendProposal} disabled={submitting || suitcases.length === 0}>
+          <button className="w-full btn-primary mt-2 disabled:opacity-50" onClick={sendProposal} disabled={submitting || (!isCreatingSuitcase && !selectedSuitcaseId)}>
             {submitting ? '发送中...' : '✉️ 发送帮带提议'}
           </button>
         </div>
