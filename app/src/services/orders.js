@@ -55,7 +55,7 @@ export async function updateTrade(tradeId, updates) {
 // --- Semantic State Transitions ---
 
 export async function acceptProposal(tradeId, actorId) {
-  const { data: trade, error } = await supabase.from('trades').select('*, post:posts(*)').eq('id', tradeId).single()
+  const { data: trade, error } = await supabase.from('trades').select('*, post:posts!trades_post_id_fkey(*)').eq('id', tradeId).single()
   if (error) throw error
 
   await updateTradeStatus(tradeId, 'confirmed')
@@ -74,7 +74,7 @@ export async function acceptProposal(tradeId, actorId) {
 }
 
 export async function rejectProposal(tradeId, actorId) {
-  const { data: trade, error } = await supabase.from('trades').select('*, post:posts(*)').eq('id', tradeId).single()
+  const { data: trade, error } = await supabase.from('trades').select('*, post:posts!trades_post_id_fkey(*)').eq('id', tradeId).single()
   if (error) throw error
 
   await updateTradeStatus(tradeId, 'cancelled')

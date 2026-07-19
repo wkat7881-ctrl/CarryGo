@@ -68,6 +68,7 @@ export default function ChatDetailProposalPage() {
       reload()
     } catch (err) {
       console.error('Failed to accept trade:', err)
+      showToast('Accept Error: ' + err.message, 'error')
     }
   }
 
