@@ -1,0 +1,25 @@
+-- ============================================
+-- Migration: 删除 notifications 表
+-- ============================================
+-- 为什么需要：
+--   通知功能已从前端代码中完全移除。
+--   所有 notification 相关代码（INSERT、UPDATE、SELECT）
+--   已从以下文件中删除：
+--     - ChatPage.jsx       (INSERT + UPDATE)
+--     - InboxPage.jsx      (SELECT + UPDATE + Tab)
+--     - Layout.jsx         (SELECT for badge count)
+--     - RatingModal.jsx    (INSERT)
+--   数据库中 notifications 表不再有任何用途。
+--
+-- 修改哪些表：
+--   删除 public.notifications 表及其 RLS policies、索引。
+--
+-- 是否影响已有数据：
+--   是。notifications 表中的所有数据行将被删除。
+--   但这些数据没有前端展示，不会对用户产生任何影响。
+--
+-- 是否可以重复执行：
+--   是。DROP TABLE IF EXISTS，完全幂等。
+-- ============================================
+
+DROP TABLE IF EXISTS public.notifications CASCADE;

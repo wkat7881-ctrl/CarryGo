@@ -1,0 +1,312 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+/* ============================================
+   CarryGo Design System v2
+   Brand: Purple #6D5EF5
+   Background: #F8F8FC (warm gray-purple)
+   Grid: 8px
+   ============================================ */
+
+@theme {
+  /* Primary — Brand Purple (仅用于按钮、Logo、链接、选中态) */
+  --color-primary-50: #F4F2FF;
+  --color-primary-100: #EDEAFF;
+  --color-primary-200: #D9D4FF;
+  --color-primary-300: #BDB4FF;
+  --color-primary-400: #9B8EFF;
+  --color-primary-500: #7C6EF7;
+  --color-primary-600: #6D5EF5;
+  --color-primary-700: #5A4EDF;
+  --color-primary-800: #4A3EC4;
+  --color-primary-900: #3A2EA0;
+
+  /* Success — Emerald (可接单 / 有效状态) */
+  --color-success-50: #ECFDF5;
+  --color-success-100: #D1FAE5;
+  --color-success-500: #10B981;
+  --color-success-600: #059669;
+  --color-success-700: #047857;
+
+  /* Warning — Amber (求帮带) */
+  --color-warning-50: #FFFBEB;
+  --color-warning-100: #FEF3C7;
+  --color-warning-500: #F59E0B;
+  --color-warning-600: #D97706;
+  --color-warning-700: #B45309;
+
+  /* Info — Blue (可帮带标签) */
+  --color-info-50: #EFF6FF;
+  --color-info-100: #DBEAFE;
+  --color-info-500: #3B82F6;
+  --color-info-600: #2563EB;
+  --color-info-700: #1D4ED8;
+
+  /* Muted — Neutral (背景、边框、文本) */
+  --color-muted-50: #F8F8FC;    /* page background */
+  --color-muted-100: #F0F0F5;   /* card divider */
+  --color-muted-200: #EBEBF0;   /* default border */
+  --color-muted-300: #D4D4DD;   /* border hover */
+  --color-muted-400: #BBBBC8;   /* placeholder / icon */
+  --color-muted-500: #9999AA;   /* tertiary text / time */
+  --color-muted-600: #6B6B7B;   /* secondary text / body */
+  --color-muted-700: #1A1A2E;   /* primary text / heading */
+  --color-muted-800: #0F0F1A;
+  --color-muted-900: #08080D;
+
+  /* Font */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* ============================================
+   Base
+   ============================================ */
+body {
+  margin: 0;
+  background: #F8F8FC;
+  color: #1A1A2E;
+  font-family: var(--font-sans);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100dvh;
+}
+
+/* ============================================
+   Typography System
+   ============================================ */
+.text-display {
+  font-size: 2.25rem;      /* 36px */
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.text-heading {
+  font-size: 1.25rem;      /* 20px */
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+}
+
+.text-title {
+  font-size: 1.125rem;     /* 18px */
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.text-body {
+  font-size: 0.875rem;     /* 14px */
+  font-weight: 400;
+  line-height: 1.55;
+}
+
+.text-caption {
+  font-size: 0.75rem;      /* 12px */
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+/* ============================================
+   Card
+   ============================================ */
+.card {
+  background: #FFFFFF;
+  border-radius: 1rem;            /* 16px */
+  border: 1px solid #EBEBF0;
+  box-shadow: none;
+  transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
+}
+
+.card:hover {
+  border-color: #D4D4DD;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+  transform: translateY(-2px);
+}
+
+/* ============================================
+   Input Base
+   ============================================ */
+.input-base {
+  height: 2.75rem;                /* 44px */
+  padding: 0 0.875rem;
+  border: 1px solid #EBEBF0;
+  border-radius: 0.5rem;          /* 8px */
+  font-size: 0.875rem;
+  background: #FFFFFF;
+  color: #1A1A2E;
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+  width: 100%;
+}
+
+.input-base::placeholder {
+  color: #BBBBC8;
+}
+
+.input-base:focus {
+  border-color: #6D5EF5;
+  box-shadow: 0 0 0 3px rgba(109, 94, 245, 0.10);
+}
+
+/* ============================================
+   Button System
+   ============================================ */
+
+/* Base */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 2.75rem;                /* 44px */
+  padding: 0 1.25rem;             /* 20px */
+  border-radius: 0.5rem;          /* 8px */
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 150ms ease;
+  cursor: pointer;
+  border: none;
+  white-space: nowrap;
+  outline: none;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Primary */
+.btn-primary {
+  background: #6D5EF5;
+  color: #FFFFFF;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #5A4EDF;
+}
+
+/* Secondary / Outline */
+.btn-outline {
+  background: transparent;
+  color: #6B6B7B;
+  border: 1px solid #EBEBF0;
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: #F8F8FC;
+  border-color: #D4D4DD;
+}
+
+/* Ghost */
+.btn-ghost {
+  background: transparent;
+  color: #6B6B7B;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: #F4F2FF;
+  color: #6D5EF5;
+}
+
+/* Danger */
+.btn-danger {
+  background: transparent;
+  color: #EF4444;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #FEF2F2;
+}
+
+/* Large */
+.btn-lg {
+  height: 3rem;                   /* 48px */
+  padding: 0 1.5rem;              /* 24px */
+  font-size: 1rem;                /* 16px */
+}
+
+/* Small */
+.btn-sm {
+  height: 2.25rem;                /* 36px */
+  padding: 0 0.875rem;            /* 14px */
+  font-size: 0.8125rem;           /* 13px */
+}
+
+/* ============================================
+   Tag / Badge System
+   ============================================ */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+  white-space: nowrap;
+}
+
+/* 可帮带 — Blue */
+.tag-provide {
+  background: #EFF6FF;
+  color: #3B82F6;
+}
+
+/* 求帮带 — Amber */
+.tag-request {
+  background: #FFFBEB;
+  color: #F59E0B;
+}
+
+/* 可接单 / 有效 — Emerald */
+.tag-active {
+  background: #ECFDF5;
+  color: #10B981;
+}
+
+/* 已满 / 已找到 — Gray */
+.tag-fulfilled {
+  background: #F3F4F6;
+  color: #9CA3AF;
+}
+
+/* ============================================
+   Utilities
+   ============================================ */
+
+/* Safe area for mobile bottom */
+.pb-safe {
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* Search bar — unified pill */
+.search-bar {
+  background: #FFFFFF;
+  border: 1px solid #EBEBF0;
+  border-radius: 1rem;
+  box-shadow: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.search-bar:focus-within {
+  border-color: #6D5EF5;
+  box-shadow: 0 0 0 3px rgba(109, 94, 245, 0.10);
+}
+
+/* Focus ring — unified */
+.focus-ring:focus {
+  outline: none;
+  border-color: #6D5EF5;
+  box-shadow: 0 0 0 3px rgba(109, 94, 245, 0.10);
+}
