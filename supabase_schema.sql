@@ -1,12 +1,11 @@
--- 1. CLEANUP (Drop existing to ensure fresh start)
-DROP TRIGGER IF EXISTS trigger_auto_complete_trade ON trades;
-DROP FUNCTION IF EXISTS auto_complete_trade();
+-- 1. CLEANUP (Drop existing tables first — triggers will cascade drop automatically)
 DROP TABLE IF EXISTS trust_tag_votes CASCADE;
 DROP TABLE IF EXISTS messages CASCADE;
 DROP TABLE IF EXISTS conversations CASCADE;
 DROP TABLE IF EXISTS trades CASCADE;
 DROP TABLE IF EXISTS posts CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
+DROP FUNCTION IF EXISTS auto_complete_trade();
 
 -- 2. TABLES CREATION
 
